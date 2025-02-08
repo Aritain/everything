@@ -1,0 +1,18 @@
+version: '2.4'
+
+services:
+  everything:
+    build: 
+      context: ./
+      dockerfile: ./Dockerfile
+    image: everything:latest
+    container_name: everything
+    restart: always
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '2'
+    environment:
+        TG_TOKEN: ${TG_TOKEN}
+        BOT_ADMIN: ${BOT_ADMIN}
