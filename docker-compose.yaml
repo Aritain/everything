@@ -16,3 +16,4 @@ services:
     environment:
         TG_TOKEN: ${TG_TOKEN}
         BOT_ADMIN: ${BOT_ADMIN}
+        TFL_TOKEN: ${TFL_TOKEN}
