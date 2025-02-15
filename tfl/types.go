@@ -3,7 +3,7 @@ package tfl
 import (
     "encoding/xml"
 )
-// ArrayOfLineStatus.Lines.Line.Name
+
 type ArrayOfLineStatus struct {
     XMLName xml.Name     `xml:"ArrayOfLineStatus"`
     Xmlns   string       `xml:"xmlns,attr"`
