@@ -58,6 +58,7 @@ func main() {
             mr.ResponseText = "Failed to process the request."
         }
         msg.Text = mr.ResponseText
+        msg.ParseMode = "Markdown"
         if _, err := bot.Send(msg); err != nil {
             log.Panic(err)
         }

@@ -4,3 +4,5 @@ docker-compose.yaml
 Dockerfile
 README.md
 samples
+go.sum
+go.mod

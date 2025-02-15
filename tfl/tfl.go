@@ -1,11 +1,7 @@
 package tfl
 
 import (
-    "log"
-    "io/ioutil"
-    "os"
-    "net/http"
-    "encoding/xml"
+    "fmt"
     "everything/models"
 )
 
@@ -14,52 +10,28 @@ const TFL_URL = "https://api.tfl.gov.uk/trackernet/LineStatus"
 const AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
 
-func FetchStatus() (tr models.ModuleResponse) {
+func FetchStatus() (mr models.ModuleResponse) {
     var APIResponse ArrayOfLineStatus
-    APIResponse, tr.ResponseCode = GetData()
-    if tr.ResponseCode {
-        return tr
-    }
-    log.Println(APIResponse)
+    var responceData []TFLParsed
+    trackedLines := []string{"🟪 Elizabeth Line", "🟩 District", "🟦 Piccadilly", "🟥 Central"}
 
-    tr.ResponseText = "OK"
-    return tr
-}
-
-
-func GetData() (APIResponse ArrayOfLineStatus, processingError bool) {
-    APIKey, status := os.LookupEnv("TFL_TOKEN")
-    if !status {
-        log.Printf("TFL_TOKEN env is missing.")
-        return APIResponse, true
+    APIResponse, mr.ResponseCode = GetData()
+    if mr.ResponseCode {
+        return mr
     }
 
-    client := &http.Client{}
-    req , err := http.NewRequest("GET", TFL_URL, nil)
-    if err != nil {
-        log.Println(err)
-        return APIResponse, true
+    for _, line := range trackedLines {
+        for _, entry := range APIResponse.Lines {
+            // 5: for skipping color square
+            if line[5:] == entry.Line.Name {
+                responceData = append(responceData, TFLParsed{Line: line, Status: entry.Status.Description})
+            }
+        }
     }
 
-    req.Header.Add("app_key", APIKey)
-    req.Header.Add("User-Agent", AGENT)
-    response , err := client.Do(req)
-    if err != nil {
-        log.Println(err)
-        return APIResponse, true
+    for _, elem := range responceData {
+        mr.ResponseText += fmt.Sprintf("%s - *%s*\n", elem.Line, elem.Status)
     }
-
-    body, err := ioutil.ReadAll(response.Body)
-    if err != nil {
-        log.Println(err)
-        return APIResponse, true
-    }
-
-    err = xml.Unmarshal(body, &APIResponse)
-    if err != nil {
-        log.Println(err)
-        return APIResponse, true
-    }
-
-    return APIResponse, processingError
+    mr.ResponseText += "https://tfl.gov.uk/"
+    return mr
 }
