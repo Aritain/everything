@@ -1,31 +1,31 @@
-package tfl
+package weather
 
 import (
     "log"
     "io/ioutil"
     "os"
     "net/http"
-    "encoding/xml"
+    "encoding/json"
 
-    tfl "everything/models/tfl"
+    w "everything/models/weather"
 )
-
-func GetData() (APIResponse tfl.ArrayOfLineStatus, processingError bool) {
-    APIKey, status := os.LookupEnv("TFL_TOKEN")
+// TODO make this call reusable for other modules
+func GetData() (APIResponse w.WeatherStatus, processingError bool) {
+    APIKey, status := os.LookupEnv("WEATHER_TOKEN")
     if !status {
-        log.Printf("TFL_TOKEN env is missing.")
+        log.Printf("WEATHER_TOKEN env is missing.")
         return APIResponse, true
     }
 
+    url := WEATHER_URL_ONE + APIKey + WEATHER_URL_TWO
+    log.Println(url)
     client := &http.Client{}
-    req , err := http.NewRequest("GET", TFL_URL, nil)
+    req , err := http.NewRequest("GET", url, nil)
     if err != nil {
         log.Println(err)
         return APIResponse, true
     }
 
-    req.Header.Add("app_key", APIKey)
-    req.Header.Add("User-Agent", AGENT)
     response , err := client.Do(req)
     if err != nil {
         log.Println(err)
@@ -38,7 +38,7 @@ func GetData() (APIResponse tfl.ArrayOfLineStatus, processingError bool) {
         return APIResponse, true
     }
 
-    err = xml.Unmarshal(body, &APIResponse)
+    err = json.Unmarshal(body, &APIResponse)
     if err != nil {
         log.Println(err)
         return APIResponse, true

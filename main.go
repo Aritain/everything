@@ -7,6 +7,7 @@ import (
     "strconv"
     "everything/models"
     "everything/tfl"
+    "everything/weather"
 )
 
 func main() {
@@ -53,6 +54,8 @@ func main() {
         switch {
             case update.Message.Command() == "tfl":
                 mr = tfl.FetchStatus()
+            case update.Message.Command() == "weather":
+                mr = weather.FetchStatus()
         }
         if mr.ResponseCode {
             mr.ResponseText = "Failed to process the request."

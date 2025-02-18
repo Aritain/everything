@@ -2,7 +2,9 @@ package tfl
 
 import (
     "fmt"
+
     "everything/models"
+    tfl "everything/models/tfl"
 )
 
 const TFL_URL = "https://api.tfl.gov.uk/trackernet/LineStatus"
@@ -11,8 +13,8 @@ const AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHT
 
 
 func FetchStatus() (mr models.ModuleResponse) {
-    var APIResponse ArrayOfLineStatus
-    var responceData []TFLParsed
+    var APIResponse tfl.ArrayOfLineStatus
+    var responceData []tfl.TFLParsed
     trackedLines := []string{"🟪 Elizabeth Line", "🟩 District", "🟦 Piccadilly", "🟥 Central"}
 
     APIResponse, mr.ResponseCode = GetData()
@@ -24,7 +26,7 @@ func FetchStatus() (mr models.ModuleResponse) {
         for _, entry := range APIResponse.Lines {
             // 5: for skipping color square
             if line[5:] == entry.Line.Name {
-                responceData = append(responceData, TFLParsed{Line: line, Status: entry.Status.Description})
+                responceData = append(responceData, tfl.TFLParsed{Line: line, Status: entry.Status.Description})
             }
         }
     }
