@@ -1,0 +1,9 @@
+TG_TOKEN = ""
+BOT_ADMINS = [0, 1]
+
+TFL_TOKEN = "123"
+TFL_ENDPOINT = "https://api.tfl.gov.uk/trackernet/LineStatus"
+TFL_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+
+WEATHER_TOKEN = "456"
+WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/forecast.json"

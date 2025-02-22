@@ -4,20 +4,27 @@ import (
     "fmt"
 
     "everything/models"
+    "everything/common"
     tfl "everything/models/tfl"
+    //c "everything/config"
 )
 
-const TFL_URL = "https://api.tfl.gov.uk/trackernet/LineStatus"
-// API auth fails without User-Agent set
-const AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
 
-
-func FetchStatus() (mr models.ModuleResponse) {
+func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
     var APIResponse tfl.ArrayOfLineStatus
     var responceData []tfl.TFLParsed
+    params := map[string]string{}
+    headers := map[string]string{
+        "app_key": config.TFLToken,
+        "User-Agent": config.TFLAgent,
+    }
     trackedLines := []string{"🟪 Elizabeth Line", "🟩 District", "🟦 Piccadilly", "🟥 Central"}
 
-    APIResponse, mr.ResponseCode = GetData()
+    APIResponse, mr.ResponseCode = common.GetRequest[tfl.ArrayOfLineStatus](
+        config.TFLEndpoint,
+        "xml",
+        params, headers,
+    )
     if mr.ResponseCode {
         return mr
     }
@@ -26,7 +33,10 @@ func FetchStatus() (mr models.ModuleResponse) {
         for _, entry := range APIResponse.Lines {
             // 5: for skipping color square
             if line[5:] == entry.Line.Name {
-                responceData = append(responceData, tfl.TFLParsed{Line: line, Status: entry.Status.Description})
+                responceData = append(
+                    responceData,
+                    tfl.TFLParsed{Line: line, Status: entry.Status.Description,
+                })
             }
         }
     }

@@ -4,16 +4,28 @@ import (
     "fmt"
 
     "everything/models"
+    "everything/common"
     w "everything/models/weather"
 )
 
-// TODO - pass as options
-const WEATHER_URL_ONE = "https://api.weatherapi.com/v1/forecast.json?key="
-const WEATHER_URL_TWO = "&q=London&days=1&aqi=no&alerts=no"
 
-func FetchStatus() (mr models.ModuleResponse) {
+func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
     var APIResponse w.WeatherStatus
-    APIResponse, mr.ResponseCode = GetData()
+    params := map[string]string{
+        "key": config.WeatherToken,
+        "q": "London",
+        "days": "1",
+        "aqi": "no",
+        "alerts": "no",
+    }
+    headers := map[string]string{}
+    //APIResponse, mr.ResponseCode = GetData()
+    APIResponse, mr.ResponseCode = common.GetRequest[w.WeatherStatus](
+        config.WeatherEndpoint,
+        "json",
+        params,
+        headers,
+    )
     fmt.Println(APIResponse)
     mr.ResponseText, mr.ResponseCode = "123", false
     return mr
