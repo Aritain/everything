@@ -19,7 +19,7 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
         "alerts": "no",
     }
     headers := map[string]string{}
-    //APIResponse, mr.ResponseCode = GetData()
+
     APIResponse, mr.ResponseCode = common.GetRequest[w.WeatherStatus](
         config.WeatherEndpoint,
         "json",
