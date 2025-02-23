@@ -13,3 +13,5 @@ services:
       options:
         max-size: '10m'
         max-file: '2'
+    volumes:
+      - ./config/config.toml:/config/config.toml:ro

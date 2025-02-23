@@ -14,3 +14,9 @@ type Config struct {
     WeatherToken    string  `mapstructure:"WEATHER_TOKEN"`
     WeatherEndpoint string  `mapstructure:"WEATHER_ENDPOINT"`
 }
+
+type SavedChat struct {
+	UserID int64
+	ChatPath string
+	ChatStage int8
+}
