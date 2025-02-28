@@ -25,6 +25,7 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
         params, headers,
     )
     if mr.ResponseCode {
+        mr.ResponseText = "Failed to fetch TFL data"
         return mr
     }
 

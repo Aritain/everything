@@ -1,13 +1,20 @@
 package models
 
 import (
-    time
+    "time"
 )
 
 type Reminder struct {
     UserID       int64
     ReminderText string
-    NextReminder time.time
+    NextReminder time.Time
     RepeatToggle bool
-    RepeatMode   string    // days, weeks, months
+    RepeatMode   string    // day, week, month, year
+    RepeatValue  uint8
+}
+
+type ReminderInput struct {
+    ReminderCache []Reminder
+    Text          string
+    UserID        int64
 }

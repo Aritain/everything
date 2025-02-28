@@ -4,7 +4,9 @@ import (
     "log"
     "slices"
 
+    "everything/common"
     "everything/models"
+    "everything/reminder"
     "everything/tfl"
     "everything/weather"
     c "everything/config"
@@ -27,6 +29,9 @@ func main() {
 
     var userChats []models.SavedChat
     var reminderCache []r.Reminder
+    var userID int64
+    var chatPath string
+    var chatStage int8
     remindCreatePath := "create_reminder"
     remindDeletePath := "delete_reminder"
     // Create chan for telegram updates
@@ -37,7 +42,7 @@ func main() {
     for update := range updates {
         var mr models.ModuleResponse
         userID = update.Message.Chat.ID
-        chatPath, chatStage = common.FetchUser(&userChats, ChatID)
+        chatPath, chatStage = common.FetchUser(&userChats, userID)
         if !slices.Contains(config.BotAdmins, userID) {
             continue
         }
@@ -50,24 +55,34 @@ func main() {
         // TODO - implement cancel
         // /create_reminder path
         if chatPath == remindCreatePath {
-            common.EndChat(&userChats, ChatID)
+            reminderInput := r.ReminderInput{
+                ReminderCache: reminderCache,
+                Text         : update.Message.Text,
+                UserID       : userID,
+            }
             switch chatStage {
                 case 0:
-                    mr = reminder.StartReminder(&reminderCache, update.Message.Text ,userID)
-                    common.IncrementStage(&userChats, userID)
+                    mr = reminder.ReadReminderName(&reminderInput)
                 case 1:
-                    mr = reminder.ProcessTime(&reminderCache, update.Message.Text ,userID)
-                    if !mr.ResponseCode {
-                        common.IncrementStage(&userChats, userID)
-                    }
+                    mr = reminder.ReadReminderTime(&reminderInput)
+                case 2:
+                    mr = reminder.ReadReminderRepeat(&reminderInput)
+                case 3:
+                    mr = reminder.ReadReminderMode(&reminderInput)
+                case 4:
+                    mr = reminder.ReadReminderValue(&reminderInput)
+                    common.EndChat(&userChats, userID)
+            }
+            if !mr.ResponseCode {
+                common.IncrementStage(&userChats, userID)
             }
         }
         // /delete_reminder path
-        if chatPath == remindDeletePath {
+        /*if chatPath == remindDeletePath {
             common.EndChat(&userChats, ChatID)
             switch chatStage {
             }
-        }
+        }*/
         switch update.Message.Command() {
             // TODO - implement help
             case "tfl":
@@ -77,14 +92,15 @@ func main() {
             case "create_reminder":
                 userChats = append(userChats, models.SavedChat{userID, remindCreatePath, 0})
                 mr.ResponseText = "Reminder name?"
-            case "delete_reminder"
+            case "delete_reminder":
                 userChats = append(userChats, models.SavedChat{userID, remindDeletePath, 0})
-                mr = reminder.DeleteReminder(userID)
+                //mr = reminder.DeleteReminder(userID)
         }
 
+        /* This check is pointless
         if mr.ResponseCode {
             mr.ResponseText = "Failed to process the request."
-        }
+        }*/
         msg.Text = mr.ResponseText
         msg.ParseMode = "Markdown"
         if _, err := bot.Send(msg); err != nil {

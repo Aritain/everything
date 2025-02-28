@@ -28,6 +28,11 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
         headers,
     )
 
+    if mr.ResponseCode {
+        mr.ResponseText = "Failed to fetch weather data"
+        return mr
+    }
+
     weatherData := APIResponse.Forecast.Forecasts[0].Today
     maxT := int(math.Round(float64(weatherData.MaxT)))
     minT := int(math.Round(float64(weatherData.MinT)))
