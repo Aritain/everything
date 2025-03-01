@@ -14,7 +14,7 @@ type Reminder struct {
 }
 
 type ReminderInput struct {
-    ReminderCache []Reminder
+    ReminderCache *[]Reminder
     Text          string
     UserID        int64
 }

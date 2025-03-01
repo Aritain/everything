@@ -56,7 +56,7 @@ func main() {
         // /create_reminder path
         if chatPath == remindCreatePath {
             reminderInput := r.ReminderInput{
-                ReminderCache: reminderCache,
+                ReminderCache: &reminderCache,
                 Text         : update.Message.Text,
                 UserID       : userID,
             }
@@ -67,11 +67,12 @@ func main() {
                     mr = reminder.ReadReminderTime(&reminderInput)
                 case 2:
                     mr = reminder.ReadReminderRepeat(&reminderInput)
+                    if mr.ResponseCode {common.EndChat(&userChats, userID)}
                 case 3:
                     mr = reminder.ReadReminderMode(&reminderInput)
                 case 4:
                     mr = reminder.ReadReminderValue(&reminderInput)
-                    common.EndChat(&userChats, userID)
+                    if !mr.ResponseCode {common.EndChat(&userChats, userID)}
             }
             if !mr.ResponseCode {
                 common.IncrementStage(&userChats, userID)
@@ -84,23 +85,25 @@ func main() {
             }
         }*/
         switch update.Message.Command() {
-            // TODO - implement help
             case "tfl":
                 mr = tfl.FetchStatus(&config)
             case "weather":
                 mr = weather.FetchStatus(&config)
-            case "create_reminder":
+            case remindCreatePath:
                 userChats = append(userChats, models.SavedChat{userID, remindCreatePath, 0})
+                reminderCache = append(reminderCache, r.Reminder{UserID: userID})
                 mr.ResponseText = "Reminder name?"
-            case "delete_reminder":
+            case remindDeletePath:
                 userChats = append(userChats, models.SavedChat{userID, remindDeletePath, 0})
                 //mr = reminder.DeleteReminder(userID)
+            case "help":
+                mr.ResponseText = "Get help" // Make this into a function in common
         }
 
-        /* This check is pointless
-        if mr.ResponseCode {
-            mr.ResponseText = "Failed to process the request."
-        }*/
+        // If user message did not match with anything
+        if len(mr.ResponseText) == 0 {
+            mr.ResponseText = "Get help"
+        }
         msg.Text = mr.ResponseText
         msg.ParseMode = "Markdown"
         if _, err := bot.Send(msg); err != nil {
