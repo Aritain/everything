@@ -42,7 +42,7 @@ func main() {
     for update := range updates {
         var mr models.ModuleResponse
         userID = update.Message.Chat.ID
-        chatPath, chatStage = common.FetchUser(&userChats, userID)
+        text := update.Message.Text
         if !slices.Contains(config.BotAdmins, userID) {
             continue
         }
@@ -52,12 +52,18 @@ func main() {
         }
 
         msg := tgbotapi.NewMessage(userID, "")
-        // TODO - implement cancel
+        // Cancel ongoing conversation and purge cache
+        if text == "Cancel" {
+            common.EndChat(&userChats, userID)
+            reminder.DeleteReminderCache(&reminderCache, userID)
+            mr.ResponseText = "Ok"
+        }
+        chatPath, chatStage = common.FetchUser(&userChats, userID)
         // /create_reminder path
         if chatPath == remindCreatePath {
             reminderInput := r.ReminderInput{
                 ReminderCache: &reminderCache,
-                Text         : update.Message.Text,
+                Text         : text,
                 UserID       : userID,
             }
             switch chatStage {
