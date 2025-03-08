@@ -7,3 +7,5 @@ TFL_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML
 
 WEATHER_TOKEN = "456"
 WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/forecast.json"
+
+REMINDER_DIR = "/home/"

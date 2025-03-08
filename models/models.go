@@ -13,6 +13,7 @@ type Config struct {
     TFLAgent        string  `mapstructure:"TFL_AGENT"` // Call fails without this
     WeatherToken    string  `mapstructure:"WEATHER_TOKEN"`
     WeatherEndpoint string  `mapstructure:"WEATHER_ENDPOINT"`
+    ReminderDir     string  `mapstructure:"REMINDER_DIR"`
 }
 
 type SavedChat struct {

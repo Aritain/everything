@@ -1,10 +1,14 @@
 package reminder
 
 import (
+	"encoding/json"
     "fmt"
+	"os"
     "strings"
+	"strconv"
     "time"
 
+	c "everything/config"
     r "everything/models/reminder"
 )
 
@@ -37,7 +41,20 @@ func AppendCache(savedReminders *[]r.Reminder, userID int64, data r.Reminder) {
 }
 
 func WriteReminder(savedReminders *[]r.Reminder, userID int64) {
-    return
+	var reminder r.Reminder
+	config, _ := c.LoadConfig()
+	dir := config.ReminderDir
+	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
+	for _, elem := range *savedReminders {
+		if elem.UserID == userID {
+			reminder = elem
+			break
+		}
+	}
+	filename := fmt.Sprintf("%s%s_%v.json", dir, timestamp, userID)
+	file, _ := os.Create(filename)
+	defer file.Close()
+	json.NewEncoder(file).Encode(reminder)
 }
 
 /*

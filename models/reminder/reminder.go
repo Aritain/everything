@@ -5,12 +5,12 @@ import (
 )
 
 type Reminder struct {
-    UserID       int64
-    ReminderText string
-    NextReminder time.Time
-    RepeatToggle bool
-    RepeatMode   string    // day, week, month, year
-    RepeatValue  uint8
+    UserID       int64      `json:"UserID"`
+    ReminderText string     `json:"ReminderText"`
+    NextReminder time.Time  `json:"NextReminder"`
+    RepeatToggle bool       `json:"RepeatToggle"`
+    RepeatMode   string     `json:"RepeatMode"` // day, week, month, year
+    RepeatValue  uint8      `json:"RepeatValue"`
 }
 
 type ReminderInput struct {
