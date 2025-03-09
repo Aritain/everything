@@ -71,6 +71,19 @@ func ReadReminderValue(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	return mr
 }
 
+func GetReminders(userID int64) (mr models.ModuleResponse) {
+	reminders := LoadReminders()
+	for _, reminder := range reminders {
+		if reminder.ReminderData.UserID == userID {
+			mr.ResponseText += FormatReminder(reminder.ReminderData)
+		}
+	}
+	if len(mr.ResponseText) == 0 {
+		mr.ResponseText = "No reminders found."
+	}
+	return mr
+}
+
 func DeleteReminderQuery(userID int64) (mr models.ModuleResponse) {
 	return mr
 }

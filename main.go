@@ -130,6 +130,8 @@ func main() {
 			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
 			usedKeyboard = common.CompileCancelKeyboard()
 			//mr = reminder.DeleteReminder(userID)
+		case "get_reminders":
+			mr = reminder.GetReminders(userID)
 		case "help":
 			mr.ResponseText = "Get help" // Make this into a function in common
 		}
