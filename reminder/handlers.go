@@ -91,6 +91,13 @@ func FormatReminder(reminder r.Reminder) (fmtReminder string) {
 	return fmtReminder
 }
 
+func DeleteReminder(filename string) (status bool) {
+	config, _ := c.LoadConfig()
+	dir := config.ReminderDir
+	err := os.Remove(dir + "/" + filename)
+	return err == nil
+}
+
 /*
 Pure AI code, parses user input as time.Time, following formats are supported
 YYYY-MM-DD hh:mm
@@ -107,24 +114,62 @@ The value would be 2025-01-16 13:00
 func ParseTime(input string) (time.Time, error) {
 	now := time.Now()
 	input = strings.TrimSpace(input)
+
 	switch {
 	case strings.Contains(input, "-") && strings.Contains(input, ":"):
+		// Format: YYYY-MM-DD hh:mm or MM-DD hh:mm
 		parts := strings.Split(input, " ")
 		if len(parts) != 2 {
-			return time.Time{}, fmt.Errorf("Failed")
+			return time.Time{}, fmt.Errorf("invalid format: expected date and time separated by space")
 		}
 
 		datePart := parts[0]
 		timePart := parts[1]
 
 		if strings.Count(datePart, "-") == 2 {
+			// Format: YYYY-MM-DD hh:mm
 			return time.Parse("2006-01-02 15:04", input)
 		} else {
+			// Format: MM-DD hh:mm
 			datePart = fmt.Sprintf("%d-%s", now.Year(), datePart)
 			t, err := time.Parse("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart))
 			if err != nil {
 				return time.Time{}, err
 			}
+
+			// If the date has already passed this year, use next year
+			if t.Before(now) {
+				t = t.AddDate(1, 0, 0)
+			}
+			return t, nil
+		}
+
+	case strings.Contains(input, "-") && !strings.Contains(input, ":"):
+		// Format: YYYY-MM-DD hh or MM-DD hh
+		parts := strings.Split(input, " ")
+		if len(parts) != 2 {
+			return time.Time{}, fmt.Errorf("invalid format: expected date and time separated by space")
+		}
+
+		datePart := parts[0]
+		hourPart := parts[1]
+
+		if strings.Count(datePart, "-") == 2 {
+			// Format: YYYY-MM-DD hh
+			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart))
+			if err != nil {
+				return time.Time{}, err
+			}
+			return t, nil
+		} else {
+			// Format: MM-DD hh
+			datePart = fmt.Sprintf("%d-%s", now.Year(), datePart)
+			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart))
+			if err != nil {
+				return time.Time{}, err
+			}
+
+			// If the date has already passed this year, use next year
 			if t.Before(now) {
 				t = t.AddDate(1, 0, 0)
 			}
@@ -132,41 +177,70 @@ func ParseTime(input string) (time.Time, error) {
 		}
 
 	case strings.Contains(input, " "):
+		// Format: DD hh:mm or DD hh
 		parts := strings.Split(input, " ")
 		if len(parts) != 2 {
-			return time.Time{}, fmt.Errorf("Failed")
+			return time.Time{}, fmt.Errorf("invalid format: expected day and time separated by space")
 		}
 
 		dayPart := parts[0]
 		timePart := parts[1]
 
-		datePart := fmt.Sprintf("%d-%02d-%s", now.Year(), now.Month(), dayPart)
-		t, err := time.Parse("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart))
-		if err != nil {
-			return time.Time{}, err
+		if strings.Contains(timePart, ":") {
+			// Format: DD hh:mm
+			datePart := fmt.Sprintf("%d-%02d-%s", now.Year(), now.Month(), dayPart)
+			t, err := time.Parse("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart))
+			if err != nil {
+				return time.Time{}, err
+			}
+
+			// If the date has already passed this month, use next month
+			if t.Before(now) {
+				t = t.AddDate(0, 1, 0)
+			}
+			return t, nil
+		} else {
+			// Format: DD hh
+			datePart := fmt.Sprintf("%d-%02d-%s", now.Year(), now.Month(), dayPart)
+			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, timePart))
+			if err != nil {
+				return time.Time{}, err
+			}
+
+			// If the date has already passed this month, use next month
+			if t.Before(now) {
+				t = t.AddDate(0, 1, 0)
+			}
+			return t, nil
 		}
-		if t.Before(now) {
-			t = t.AddDate(0, 1, 0)
-		}
-		return t, nil
 
 	case strings.Contains(input, ":"):
+		// Format: hh:mm
 		t, err := time.Parse("15:04", input)
 		if err != nil {
 			return time.Time{}, err
 		}
+
+		// Use today's date
 		t = time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), t.Minute(), 0, 0, now.Location())
+
+		// If the time has already passed today, use tomorrow
 		if t.Before(now) {
 			t = t.AddDate(0, 0, 1)
 		}
 		return t, nil
 
 	default:
+		// Format: hh
 		t, err := time.Parse("15", input)
 		if err != nil {
 			return time.Time{}, err
 		}
+
+		// Use today's date and set minutes to 00
 		t = time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), 0, 0, 0, now.Location())
+
+		// If the time has already passed today, use tomorrow
 		if t.Before(now) {
 			t = t.AddDate(0, 0, 1)
 		}

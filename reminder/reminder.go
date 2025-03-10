@@ -1,6 +1,7 @@
 package reminder
 
 import (
+	"fmt"
 	"slices"
 	"strconv"
 
@@ -85,5 +86,49 @@ func GetReminders(userID int64) (mr models.ModuleResponse) {
 }
 
 func DeleteReminderQuery(userID int64) (mr models.ModuleResponse) {
+	var counter int
+	response := "Send me the number of reminder to delete:\n"
+	mr.ResponseText += response
+	reminders := LoadReminders()
+	for _, reminder := range reminders {
+		if reminder.ReminderData.UserID == userID {
+			counter += 1
+			mr.ResponseText += fmt.Sprintf("(%v) ", counter)
+			mr.ResponseText += FormatReminder(reminder.ReminderData)
+		}
+	}
+	if mr.ResponseText == response {
+		mr.ResponseText = "No reminders found."
+	}
+	return mr
+}
+
+func DeleteReminderConfirm(input string, userID int64) (mr models.ModuleResponse) {
+	number, err := strconv.Atoi(input)
+	if (err != nil) || (number <= 0) {
+		mr.ResponseText = "Bad value"
+		mr.ResponseCode = true
+		return mr
+	}
+	// Reduce number for it to match index
+	number -= 1
+	reminders := LoadReminders()
+	var userReminders []r.ReminderFile
+	for _, reminder := range reminders {
+		if reminder.ReminderData.UserID == userID {
+			userReminders = append(userReminders, reminder)
+		}
+	}
+	if number > len(userReminders) {
+		mr.ResponseText = "Bad value"
+		mr.ResponseCode = true
+		return mr
+	}
+	if !DeleteReminder(userReminders[number].FileName) {
+		mr.ResponseText = "Failed to delete the file"
+		mr.ResponseCode = true
+		return mr
+	}
+	mr.ResponseText = "Done"
 	return mr
 }

@@ -74,11 +74,10 @@ func main() {
 			mr.ResponseText = "Ok"
 		}
 		chatPath, chatStage = common.FetchUser(&userChats, userID)
-		if chatPath != "" {
-			usedKeyboard = common.CompileCancelKeyboard()
-		}
+
 		// /create_reminder path
 		if chatPath == remindCreatePath {
+			usedKeyboard = common.CompileCancelKeyboard()
 			reminderInput := r.ReminderInput{
 				ReminderCache: &reminderCache,
 				Text:          text,
@@ -104,6 +103,7 @@ func main() {
 				mr = reminder.ReadReminderValue(&reminderInput)
 				if !mr.ResponseCode {
 					common.EndChat(&userChats, userID)
+					usedKeyboard = common.CompileDefaultKeyboard()
 				}
 			}
 			if !mr.ResponseCode {
@@ -111,11 +111,14 @@ func main() {
 			}
 		}
 		// /delete_reminder path
-		/*if chatPath == remindDeletePath {
-		    common.EndChat(&userChats, ChatID)
-		    switch chatStage {
-		    }
-		}*/
+		if chatPath == remindDeletePath {
+			mr = reminder.DeleteReminderConfirm(text, userID)
+			usedKeyboard = common.CompileCancelKeyboard()
+			if !mr.ResponseCode {
+				common.EndChat(&userChats, userID)
+				usedKeyboard = common.CompileDefaultKeyboard()
+			}
+		}
 		switch text {
 		case "tfl":
 			mr = tfl.FetchStatus(&config)
@@ -129,7 +132,7 @@ func main() {
 		case remindDeletePath:
 			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
 			usedKeyboard = common.CompileCancelKeyboard()
-			//mr = reminder.DeleteReminder(userID)
+			mr = reminder.DeleteReminderQuery(userID)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
 		case "help":
