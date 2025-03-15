@@ -76,14 +76,19 @@ func FormatReminder(reminder r.Reminder) (fmtReminder string) {
 	var repeatable string
 	if reminder.RepeatToggle {
 		repeatable = fmt.Sprintf(
-			" Repeatable each %v %ss.",
+			" Repeatable each %v %s",
 			reminder.RepeatValue,
 			reminder.RepeatMode,
 		)
+		if reminder.RepeatValue > 1 {
+			repeatable += "s."
+		} else {
+			repeatable += "."
+		}
 	}
 	repeatable += "\n"
 	fmtReminder = fmt.Sprintf(
-		"Reminder %s at %s.%s",
+		"Reminder *%s* at %s.%s",
 		reminder.ReminderText,
 		reminder.NextReminder.Format("2006-01-02 15:04"),
 		repeatable,
@@ -98,11 +103,28 @@ func DeleteReminder(filename string) (status bool) {
 	return err == nil
 }
 
+func UpdateReminder(reminder r.Reminder) (newTime time.Time) {
+	switch {
+	case reminder.RepeatMode == "year":
+		newTime = reminder.NextReminder.AddDate(int(reminder.RepeatValue), 0, 0)
+	case reminder.RepeatMode == "month":
+		newTime = reminder.NextReminder.AddDate(0, int(reminder.RepeatValue), 0)
+	case reminder.RepeatMode == "week":
+		newTime = reminder.NextReminder.AddDate(0, 0, (7 * int(reminder.RepeatValue)))
+	case reminder.RepeatMode == "day":
+		newTime = reminder.NextReminder.AddDate(0, 0, int(reminder.RepeatValue))
+	}
+	return newTime
+}
+
 /*
 Pure AI code, parses user input as time.Time, following formats are supported
 YYYY-MM-DD hh:mm
+YYYY-MM-DD hh
 MM-DD hh:mm
+MM-DD hh
 DD hh:mm
+DD hh
 hh:mm
 hh
 By default set current year/day/etc if not supplied by the user

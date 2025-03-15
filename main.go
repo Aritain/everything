@@ -16,6 +16,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// Move keyboards into modules and make them a part of ModuleResponse
 func main() {
 	config, err := c.LoadConfig()
 	if err != nil {
@@ -40,6 +41,7 @@ func main() {
 	var ucfg tgbotapi.UpdateConfig = tgbotapi.NewUpdate(0)
 	ucfg.Timeout = 60
 	updates := bot.GetUpdatesChan(ucfg)
+	go reminder.WatchReminders()
 
 	for update := range updates {
 		if (update.Message == nil) && (update.CallbackQuery == nil) { // ignore any non-Message updates
@@ -135,13 +137,11 @@ func main() {
 			mr = reminder.DeleteReminderQuery(userID)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
-		case "help":
-			mr.ResponseText = "Get help" // Make this into a function in common
 		}
 
 		// If user message did not match with anything
 		if len(mr.ResponseText) == 0 {
-			mr.ResponseText = "Get help"
+			mr.ResponseText = "Try again."
 		}
 		msg.Text = mr.ResponseText
 		msg.ParseMode = "Markdown"
