@@ -8,5 +8,4 @@ RUN go build -o /everything
 
 FROM alpine:3.16
 COPY --from=app-builder /everything /everything
-COPY ./config/config.toml /config/config.toml
 ENTRYPOINT ["/everything"]
