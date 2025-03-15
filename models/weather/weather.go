@@ -17,5 +17,5 @@ type Today struct {
 	MinT       float32 `json:"mintemp_c"`
 	MaxWind    float32 `json:"maxwind_kph"`
 	Precip     float32 `json:"totalprecip_mm"`
-	RainChance int     `json:"daily_will_it_rain"`
+	RainChance int     `json:"daily_chance_of_rain"`
 }
