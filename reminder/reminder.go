@@ -2,71 +2,88 @@ package reminder
 
 import (
 	"fmt"
+	"log"
 	"slices"
 	"strconv"
 
+	"everything/common"
 	"everything/models"
 	r "everything/models/reminder"
 )
 
+func ReminderCreationStart(userID int64, rc *[]r.Reminder) (mr models.ModuleResponse) {
+	*rc = append(*rc, r.Reminder{UserID: userID})
+	mr.Text = "Reminder name?"
+	mr.Keyboard = common.CompileCancelKeyboard()
+	return mr
+}
+
 func ReadReminderName(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	if len(ri.Text) > 30 {
-		mr.ResponseText = "Too long"
-		mr.ResponseCode = true
+		mr.Text = "Too long"
+		mr.Error = true
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{ReminderText: ri.Text})
-	mr.ResponseText = "When?"
+	mr.Text = "When?"
+	mr.Keyboard = common.CompileCancelKeyboard()
 	return mr
 }
 
 func ReadReminderTime(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	reminderTime, err := ParseTime(ri.Text)
 	if err != nil {
-		mr.ResponseText = "Failed to read time provided"
-		mr.ResponseCode = true
+		mr.Text = "Failed to read time provided"
+		mr.Error = true
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{NextReminder: reminderTime})
-	mr.ResponseText = "Repeat?"
+	mr.Text = "Repeat?"
+	mr.Keyboard = common.CompileYesNoKeyboard()
 	return mr
 }
 
 func ReadReminderRepeat(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	if ri.Text == "No" {
-		mr.ResponseText = "Done"
-		mr.ResponseCode = true
+		mr.Text = "Done"
+		mr.EndChat = true
+		mr.Keyboard = common.CompileDefaultKeyboard()
 		WriteReminder(ri.ReminderCache, ri.UserID)
 		DeleteReminderCache(ri.ReminderCache, ri.UserID)
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{RepeatToggle: true})
-	mr.ResponseText = "Mode?"
+	mr.Text = "Mode?"
+	mr.Keyboard = common.CompileReminderModeKeyboard()
 	return mr
 }
 
 func ReadReminderMode(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	allowedResponces := []string{"day", "week", "month", "year"}
 	if !slices.Contains(allowedResponces, ri.Text) {
-		mr.ResponseText = "day/week/month/year"
-		mr.ResponseCode = true
+		mr.Text = "day/week/month/year"
+		mr.Error = true
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{RepeatMode: ri.Text})
-	mr.ResponseText = "Value?"
+	mr.Text = "Value?"
+	mr.Keyboard = common.CompileCancelKeyboard()
 	return mr
 }
 
 func ReadReminderValue(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	value64, err := strconv.ParseUint(ri.Text, 10, 8)
 	if err != nil {
-		mr.ResponseText = "Bad value"
-		mr.ResponseCode = true
+		mr.Text = "Bad value"
+		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
 	value8 := uint8(value64)
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{RepeatValue: value8})
-	mr.ResponseText = "Done"
+	mr.Text = "Done"
+	mr.EndChat = true
+	mr.Keyboard = common.CompileDefaultKeyboard()
 	WriteReminder(ri.ReminderCache, ri.UserID)
 	DeleteReminderCache(ri.ReminderCache, ri.UserID)
 	return mr
@@ -76,11 +93,11 @@ func GetReminders(userID int64) (mr models.ModuleResponse) {
 	reminders := LoadReminders()
 	for _, reminder := range reminders {
 		if reminder.ReminderData.UserID == userID {
-			mr.ResponseText += FormatReminder(reminder.ReminderData)
+			mr.Text += FormatReminder(reminder.ReminderData)
 		}
 	}
-	if len(mr.ResponseText) == 0 {
-		mr.ResponseText = "No reminders found."
+	if len(mr.Text) == 0 {
+		mr.Text = "No reminders found."
 	}
 	return mr
 }
@@ -88,17 +105,21 @@ func GetReminders(userID int64) (mr models.ModuleResponse) {
 func DeleteReminderQuery(userID int64) (mr models.ModuleResponse) {
 	var counter int
 	response := "Send me the number of reminder to delete:\n"
-	mr.ResponseText += response
+	mr.Text += response
 	reminders := LoadReminders()
 	for _, reminder := range reminders {
 		if reminder.ReminderData.UserID == userID {
 			counter += 1
-			mr.ResponseText += fmt.Sprintf("(%v) ", counter)
-			mr.ResponseText += FormatReminder(reminder.ReminderData)
+			mr.Text += fmt.Sprintf("(%v) ", counter)
+			mr.Text += FormatReminder(reminder.ReminderData)
 		}
 	}
-	if mr.ResponseText == response {
-		mr.ResponseText = "No reminders found."
+	if mr.Text == response {
+		mr.Text = "No reminders found."
+		mr.Error = true
+		mr.Keyboard = common.CompileDefaultKeyboard()
+	} else {
+		mr.Keyboard = common.CompileCancelKeyboard()
 	}
 	return mr
 }
@@ -106,8 +127,8 @@ func DeleteReminderQuery(userID int64) (mr models.ModuleResponse) {
 func DeleteReminderConfirm(input string, userID int64) (mr models.ModuleResponse) {
 	number, err := strconv.Atoi(input)
 	if (err != nil) || (number <= 0) {
-		mr.ResponseText = "Bad value"
-		mr.ResponseCode = true
+		mr.Text = "Bad value"
+		mr.Error = true
 		return mr
 	}
 	// Reduce number for it to match index
@@ -120,15 +141,20 @@ func DeleteReminderConfirm(input string, userID int64) (mr models.ModuleResponse
 		}
 	}
 	if number > len(userReminders) {
-		mr.ResponseText = "Bad value"
-		mr.ResponseCode = true
+		mr.Text = "Bad value"
+		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
 	if !DeleteReminder(userReminders[number].FileName) {
-		mr.ResponseText = "Failed to delete the file"
-		mr.ResponseCode = true
+		mr.Text = "Failed to delete the file"
+		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
-	mr.ResponseText = "Done"
+	log.Printf("Reminder deleted - %v.", userReminders[number].ReminderData)
+	mr.Text = "Done"
+	mr.EndChat = true
+	mr.Keyboard = common.CompileDefaultKeyboard()
 	return mr
 }

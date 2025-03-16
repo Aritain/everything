@@ -18,13 +18,13 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	}
 	trackedLines := []string{"🟪 Elizabeth Line", "🟩 District", "🟦 Piccadilly", "🟥 Central"}
 
-	APIResponse, mr.ResponseCode = common.GetRequest[tfl.ArrayOfLineStatus](
+	APIResponse, mr.Error = common.GetRequest[tfl.ArrayOfLineStatus](
 		config.TFLEndpoint,
 		"xml",
 		params, headers,
 	)
-	if mr.ResponseCode {
-		mr.ResponseText = "Failed to fetch TFL data"
+	if mr.Error {
+		mr.Text = "Failed to fetch TFL data"
 		return mr
 	}
 
@@ -40,8 +40,8 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	}
 
 	for _, elem := range responceData {
-		mr.ResponseText += fmt.Sprintf("%s - *%s*\n", elem.Line, elem.Status)
+		mr.Text += fmt.Sprintf("%s - *%s*\n", elem.Line, elem.Status)
 	}
-	mr.ResponseText += "https://tfl.gov.uk/"
+	mr.Text += "https://tfl.gov.uk/"
 	return mr
 }

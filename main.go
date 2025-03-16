@@ -13,21 +13,20 @@ import (
 	"everything/tfl"
 	"everything/weather"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	t "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
-// Move keyboards into modules and make them a part of ModuleResponse
 func main() {
 	config, err := c.LoadConfig()
 	if err != nil {
 		log.Fatal("Failed to load the config.")
 	}
 
-	bot, err := tgbotapi.NewBotAPI(config.TGToken)
+	bot, err := t.NewBotAPI(config.TGToken)
 	if err != nil {
 		log.Panic(err)
 	}
-	bot.Debug = true
+	bot.Debug = config.BotDebug
 
 	var userChats []models.SavedChat
 	var reminderCache []r.Reminder
@@ -38,7 +37,7 @@ func main() {
 	remindCreatePath := "create_reminder"
 	remindDeletePath := "delete_reminder"
 	// Create chan for telegram updates
-	var ucfg tgbotapi.UpdateConfig = tgbotapi.NewUpdate(0)
+	var ucfg t.UpdateConfig = t.NewUpdate(0)
 	ucfg.Timeout = 60
 	updates := bot.GetUpdatesChan(ucfg)
 	go reminder.WatchReminders()
@@ -66,20 +65,18 @@ func main() {
 			text = text[1:]
 		}
 		var mr models.ModuleResponse
-		usedKeyboard := common.CompileDefaultKeyboard()
 
-		msg := tgbotapi.NewMessage(userID, "")
+		msg := t.NewMessage(userID, "")
 		// Cancel ongoing conversation and purge cache
 		if text == "Cancel" {
 			common.EndChat(&userChats, userID)
 			reminder.DeleteReminderCache(&reminderCache, userID)
-			mr.ResponseText = "Ok"
+			mr.Text = "Ok"
 		}
 		chatPath, chatStage = common.FetchUser(&userChats, userID)
 
 		// /create_reminder path
 		if chatPath == remindCreatePath {
-			usedKeyboard = common.CompileCancelKeyboard()
 			reminderInput := r.ReminderInput{
 				ReminderCache: &reminderCache,
 				Text:          text,
@@ -90,62 +87,52 @@ func main() {
 				mr = reminder.ReadReminderName(&reminderInput)
 			case 1:
 				mr = reminder.ReadReminderTime(&reminderInput)
-				usedKeyboard = common.CompileYesNoKeyboard()
 			case 2:
 				mr = reminder.ReadReminderRepeat(&reminderInput)
-				if mr.ResponseCode {
-					common.EndChat(&userChats, userID)
-					usedKeyboard = common.CompileDefaultKeyboard()
-				} else {
-					usedKeyboard = common.CompileReminderModeKeyboard()
-				}
 			case 3:
 				mr = reminder.ReadReminderMode(&reminderInput)
 			case 4:
 				mr = reminder.ReadReminderValue(&reminderInput)
-				if !mr.ResponseCode {
-					common.EndChat(&userChats, userID)
-					usedKeyboard = common.CompileDefaultKeyboard()
-				}
 			}
-			if !mr.ResponseCode {
+			if (!mr.Error) && (!mr.EndChat) {
 				common.IncrementStage(&userChats, userID)
 			}
 		}
 		// /delete_reminder path
 		if chatPath == remindDeletePath {
 			mr = reminder.DeleteReminderConfirm(text, userID)
-			usedKeyboard = common.CompileCancelKeyboard()
-			if !mr.ResponseCode {
-				common.EndChat(&userChats, userID)
-				usedKeyboard = common.CompileDefaultKeyboard()
-			}
+		}
+		// Delete any ongoing chat if got EndChat flag
+		if mr.EndChat {
+			common.EndChat(&userChats, userID)
 		}
 		switch text {
 		case "tfl":
 			mr = tfl.FetchStatus(&config)
 		case "weather":
 			mr = weather.FetchStatus(&config)
-		case remindCreatePath:
-			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
-			reminderCache = append(reminderCache, r.Reminder{UserID: userID})
-			mr.ResponseText = "Reminder name?"
-			usedKeyboard = common.CompileCancelKeyboard()
-		case remindDeletePath:
-			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
-			usedKeyboard = common.CompileCancelKeyboard()
-			mr = reminder.DeleteReminderQuery(userID)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
+		case remindCreatePath:
+			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
+			mr = reminder.ReminderCreationStart(userID, &reminderCache)
+		case remindDeletePath:
+			mr = reminder.DeleteReminderQuery(userID)
+			if !mr.Error {
+				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
+			}
 		}
 
 		// If user message did not match with anything
-		if len(mr.ResponseText) == 0 {
-			mr.ResponseText = "Try again."
+		if mr.Text == "" {
+			mr.Text = "Try again."
 		}
-		msg.Text = mr.ResponseText
+		if len(mr.Keyboard.InlineKeyboard) == 0 {
+			mr.Keyboard = common.CompileDefaultKeyboard()
+		}
+		msg.Text = mr.Text
 		msg.ParseMode = "Markdown"
-		msg.ReplyMarkup = usedKeyboard
+		msg.ReplyMarkup = mr.Keyboard
 		if _, err := bot.Send(msg); err != nil {
 			log.Panic(err)
 		}

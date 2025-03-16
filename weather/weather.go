@@ -20,15 +20,15 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	}
 	headers := map[string]string{}
 
-	APIResponse, mr.ResponseCode = common.GetRequest[w.WeatherStatus](
+	APIResponse, mr.Error = common.GetRequest[w.WeatherStatus](
 		config.WeatherEndpoint,
 		"json",
 		params,
 		headers,
 	)
 
-	if mr.ResponseCode {
-		mr.ResponseText = "Failed to fetch weather data"
+	if mr.Error {
+		mr.Text = "Failed to fetch weather data"
 		return mr
 	}
 
@@ -39,11 +39,11 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	windType := CheckWind(weatherData.MaxWind)
 	rainType := CheckRain(weatherData.Precip)
 
-	mr.ResponseText = fmt.Sprintf("☀️ Maximum temperature - *%d°*\n", maxT)
-	mr.ResponseText += fmt.Sprintf("❄️ Minimum temperature - *%d°*\n", minT)
-	mr.ResponseText += fmt.Sprintf("💨 %s wind - *%d* km/h\n", windType, windStr)
-	mr.ResponseText += fmt.Sprintf("☔️ %s - *%.2f* mm\n", rainType, weatherData.Precip)
-	mr.ResponseText += fmt.Sprintf("🔮 Rain chance - *%d*%%", weatherData.RainChance)
+	mr.Text = fmt.Sprintf("☀️ Maximum temperature - *%d°*\n", maxT)
+	mr.Text += fmt.Sprintf("❄️ Minimum temperature - *%d°*\n", minT)
+	mr.Text += fmt.Sprintf("💨 %s wind - *%d* km/h\n", windType, windStr)
+	mr.Text += fmt.Sprintf("☔️ %s - *%.2f* mm\n", rainType, weatherData.Precip)
+	mr.Text += fmt.Sprintf("🔮 Rain chance - *%d*%%", weatherData.RainChance)
 	return mr
 }
 

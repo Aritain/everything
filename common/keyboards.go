@@ -10,6 +10,9 @@ func CompileYesNoKeyboard() t.InlineKeyboardMarkup {
 			t.NewInlineKeyboardButtonData("Yes", "Yes"),
 			t.NewInlineKeyboardButtonData("No", "No"),
 		),
+		t.NewInlineKeyboardRow(
+			t.NewInlineKeyboardButtonData("Cancel", "Cancel"),
+		),
 	)
 	return keyboard
 }
@@ -51,6 +54,9 @@ func CompileReminderModeKeyboard() t.InlineKeyboardMarkup {
 		t.NewInlineKeyboardRow(
 			t.NewInlineKeyboardButtonData("Month", "month"),
 			t.NewInlineKeyboardButtonData("Year", "year"),
+		),
+		t.NewInlineKeyboardRow(
+			t.NewInlineKeyboardButtonData("Cancel", "Cancel"),
 		),
 	)
 	return keyboard

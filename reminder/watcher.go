@@ -7,7 +7,7 @@ import (
 	c "everything/config"
 	r "everything/models/reminder"
 
-	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	t "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func WatchReminders() {
@@ -41,8 +41,8 @@ func SendReminder(reminder r.Reminder) {
 	msgText = strings.Replace(msgText, "for Reminder", "for", -1)
 	userID := reminder.UserID
 	config, _ := c.LoadConfig()
-	bot, _ := tgbotapi.NewBotAPI(config.TGToken)
-	msg := tgbotapi.NewMessage(userID, msgText)
+	bot, _ := t.NewBotAPI(config.TGToken)
+	msg := t.NewMessage(userID, msgText)
 	var err error
 	for {
 		_, err = bot.Send(msg)

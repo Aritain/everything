@@ -3,6 +3,7 @@ package reminder
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -55,6 +56,7 @@ func WriteReminder(savedReminders *[]r.Reminder, userID int64) {
 	file, _ := os.Create(filename)
 	defer file.Close()
 	json.NewEncoder(file).Encode(reminder)
+	log.Printf("Reminder created - %v.", reminder)
 }
 
 func LoadReminders() (reminders []r.ReminderFile) {
