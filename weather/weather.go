@@ -39,7 +39,7 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	windType := CheckWind(weatherData.MaxWind)
 	rainType := CheckRain(weatherData.Precip)
 
-	mr.Text = fmt.Sprintf("☀️ Maximum temperature - *%d°*\n", maxT)
+	mr.Text += fmt.Sprintf("☀️ Maximum temperature - *%d°*\n", maxT)
 	mr.Text += fmt.Sprintf("❄️ Minimum temperature - *%d°*\n", minT)
 	mr.Text += fmt.Sprintf("💨 %s wind - *%d* km/h\n", windType, windStr)
 	mr.Text += fmt.Sprintf("☔️ %s - *%.2f* mm\n", rainType, weatherData.Precip)

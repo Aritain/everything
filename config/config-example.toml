@@ -1,5 +1,6 @@
 TG_TOKEN = ""
 BOT_ADMINS = [0, 1]
+BOT_DEBUG = false
 
 TFL_TOKEN = "123"
 TFL_ENDPOINT = "https://api.tfl.gov.uk/trackernet/LineStatus"
@@ -9,3 +10,5 @@ WEATHER_TOKEN = "456"
 WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/forecast.json"
 
 REMINDER_DIR = "/home/"
+
+CODE_ENDPOINT = ""

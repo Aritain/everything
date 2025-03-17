@@ -21,6 +21,7 @@ type Config struct {
 	WeatherToken    string  `mapstructure:"WEATHER_TOKEN"`
 	WeatherEndpoint string  `mapstructure:"WEATHER_ENDPOINT"`
 	ReminderDir     string  `mapstructure:"REMINDER_DIR"`
+	CodeEndpoint    string  `mapstructure:"CODE_ENDPOINT"`
 }
 
 type SavedChat struct {

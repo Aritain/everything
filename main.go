@@ -5,6 +5,7 @@ import (
 	"slices"
 	"strings"
 
+	"everything/codes"
 	"everything/common"
 	c "everything/config"
 	"everything/models"
@@ -111,6 +112,8 @@ func main() {
 			mr = tfl.FetchStatus(&config)
 		case "weather":
 			mr = weather.FetchStatus(&config)
+		case "codes":
+			mr = codes.FetchCodes(&config)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
 		case remindCreatePath:
