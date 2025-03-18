@@ -7,3 +7,7 @@ type CodeData struct {
 type CodeBody struct {
 	Code string `json:"code"`
 }
+
+type Subscribers struct {
+	Subscriber []int64 `json:"subscribers"`
+}

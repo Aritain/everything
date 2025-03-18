@@ -14,5 +14,6 @@ services:
         max-size: '10m'
         max-file: '2'
     volumes:
-      - ./reminders:/data:rw
+      - ./.reminders:/data/reminders/:rw
+      - ./.codes:/data/codes:rw
       - ./config/config.toml:/config/config.toml:ro

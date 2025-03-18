@@ -42,6 +42,7 @@ func main() {
 	ucfg.Timeout = 60
 	updates := bot.GetUpdatesChan(ucfg)
 	go reminder.WatchReminders()
+	go codes.FetchCodes(&config)
 
 	for update := range updates {
 		if (update.Message == nil) && (update.CallbackQuery == nil) { // ignore any non-Message updates
@@ -112,8 +113,9 @@ func main() {
 			mr = tfl.FetchStatus(&config)
 		case "weather":
 			mr = weather.FetchStatus(&config)
-		case "codes":
-			mr = codes.FetchCodes(&config)
+		case "codes_subscribe":
+			mr = codes.SubscribeUser(userID, &config)
+			//mr = codes.FetchCodes(&config)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
 		case remindCreatePath:

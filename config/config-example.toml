@@ -12,3 +12,4 @@ WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/forecast.json"
 REMINDER_DIR = "/home/"
 
 CODE_ENDPOINT = ""
+CODES_DIR = "/codes/"

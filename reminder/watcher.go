@@ -4,10 +4,8 @@ import (
 	"strings"
 	"time"
 
-	c "everything/config"
+	"everything/common"
 	r "everything/models/reminder"
-
-	t "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 func WatchReminders() {
@@ -16,7 +14,7 @@ func WatchReminders() {
 		now := time.Now()
 		for _, reminder := range reminders {
 			if now.After(reminder.ReminderData.NextReminder) {
-				go SendReminder(reminder.ReminderData)
+				SendReminder(reminder.ReminderData)
 				DeleteReminder(reminder.FileName)
 				if reminder.ReminderData.RepeatToggle {
 					bumpReminder := reminder.ReminderData
@@ -40,14 +38,16 @@ func SendReminder(reminder r.Reminder) {
 	msgText += FormatReminder(reminder)
 	msgText = strings.Replace(msgText, "for Reminder", "for", -1)
 	userID := reminder.UserID
-	config, _ := c.LoadConfig()
+	go common.SendTGMessage(userID, msgText)
+	/*config, _ := c.LoadConfig()
 	bot, _ := t.NewBotAPI(config.TGToken)
 	msg := t.NewMessage(userID, msgText)
+	msg.ParseMode = "Markdown"
 	var err error
 	for {
 		_, err = bot.Send(msg)
 		if err == nil {
 			break
 		}
-	}
+	}*/
 }

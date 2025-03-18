@@ -3,8 +3,9 @@
 docker-compose.yaml
 Dockerfile
 README.md
-samples
 go.sum
 go.mod
-reminders
+.reminders
+.codes
+.samples
 *.json

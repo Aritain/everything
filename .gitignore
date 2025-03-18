@@ -1,6 +1,7 @@
 .env
-samples
 config/config.toml
 *.json
-reminders
+.reminders
+.codes
+.samples
 list
