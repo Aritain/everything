@@ -8,6 +8,8 @@ import (
 	r "everything/models/reminder"
 )
 
+const TIMEOUT = 30
+
 func WatchReminders() {
 	for {
 		reminders := LoadReminders()
@@ -23,7 +25,7 @@ func WatchReminders() {
 				}
 			}
 		}
-		time.Sleep(30 * time.Second)
+		time.Sleep(TIMEOUT * time.Second)
 	}
 }
 
@@ -39,15 +41,4 @@ func SendReminder(reminder r.Reminder) {
 	msgText = strings.Replace(msgText, "for Reminder", "for", -1)
 	userID := reminder.UserID
 	go common.SendTGMessage(userID, msgText)
-	/*config, _ := c.LoadConfig()
-	bot, _ := t.NewBotAPI(config.TGToken)
-	msg := t.NewMessage(userID, msgText)
-	msg.ParseMode = "Markdown"
-	var err error
-	for {
-		_, err = bot.Send(msg)
-		if err == nil {
-			break
-		}
-	}*/
 }
