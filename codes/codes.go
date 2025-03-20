@@ -59,6 +59,7 @@ func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleRespons
 }
 
 func FetchCodes(config *models.Config) {
+	newCodesHeader := "New codes:\n\n"
 	dir := config.CodesDir
 	filename := "codes.json"
 	filepath := dir + "/" + filename
@@ -68,7 +69,7 @@ func FetchCodes(config *models.Config) {
 		var CodesResponce c.CodeData
 		var CodesStored c.CodeData
 		var fetchError bool
-		newCodes := "New codes:\n\n"
+		newCodes := newCodesHeader
 		CodesResponce, fetchError = common.GetRequest[c.CodeData](
 			config.CodesEndpoint,
 			"json",
@@ -97,8 +98,10 @@ func FetchCodes(config *models.Config) {
 			time.Sleep(TIMEOUT * time.Hour)
 			continue
 		}
-		for _, user := range users.Subscriber {
-			common.SendTGMessage(user, newCodes)
+		if newCodes != newCodesHeader {
+			for _, user := range users.Subscriber {
+				common.SendTGMessage(user, newCodes)
+			}
 		}
 		os.Remove(filepath)
 		file, _ := os.Create(filepath)
