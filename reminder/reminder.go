@@ -59,8 +59,8 @@ func ReadReminderRepeat(ri *r.ReminderInput) (mr models.ModuleResponse) {
 }
 
 func ReadReminderMode(ri *r.ReminderInput) (mr models.ModuleResponse) {
-	allowedResponces := []string{"day", "week", "month", "year"}
-	if !slices.Contains(allowedResponces, ri.Text) {
+	allowedResponses := []string{"day", "week", "month", "year"}
+	if !slices.Contains(allowedResponses, ri.Text) {
 		mr.Text = "day/week/month/year"
 		mr.Error = true
 		return mr

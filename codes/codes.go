@@ -16,7 +16,7 @@ import (
 const TIMEOUT = 6
 
 func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error) {
-	filepath := GenerateFilePath(config)
+	filepath := GenerateFilePath(config.CodesDir, "subscribers.json")
 	data, err := os.ReadFile(filepath)
 	if err == nil {
 		_ = json.Unmarshal(data, &subscribers)
@@ -24,17 +24,14 @@ func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error)
 	return
 }
 
-func GenerateFilePath(config *models.Config) (filepath string) {
-	dir := config.CodesDir
-	filename := "subscribers.json"
-	filepath = dir + "/" + filename
-	return
+func GenerateFilePath(dir string, filename string) string {
+	return dir + "/" + filename
 }
 
 func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleResponse) {
 	var currentSubscribers c.Subscribers
 	var newSubscribers c.Subscribers
-	filepath := GenerateFilePath(config)
+	filepath := GenerateFilePath(config.CodesDir, "subscribers.json")
 	currentSubscribers, err := GetCodesUsers(config)
 	if err == nil {
 		os.Remove(filepath)
@@ -60,17 +57,15 @@ func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleRespons
 
 func FetchCodes(config *models.Config) {
 	newCodesHeader := "New codes:\n\n"
-	dir := config.CodesDir
-	filename := "codes.json"
-	filepath := dir + "/" + filename
+	filepath := GenerateFilePath(config.CodesDir, "codes.json")
 	params := map[string]string{}
 	headers := map[string]string{}
 	for {
-		var CodesResponce c.CodeData
+		var CodesResponse c.CodeData
 		var CodesStored c.CodeData
 		var fetchError bool
 		newCodes := newCodesHeader
-		CodesResponce, fetchError = common.GetRequest[c.CodeData](
+		CodesResponse, fetchError = common.GetRequest[c.CodeData](
 			config.CodesEndpoint,
 			"json",
 			params, headers,
@@ -83,11 +78,11 @@ func FetchCodes(config *models.Config) {
 		if err == nil {
 			_ = json.Unmarshal(data, &CodesStored)
 		}
-		if reflect.DeepEqual(CodesResponce.Codes, CodesStored.Codes) {
+		if reflect.DeepEqual(CodesResponse.Codes, CodesStored.Codes) {
 			time.Sleep(TIMEOUT * time.Hour)
 			continue
 		}
-		for _, code := range CodesResponce.Codes {
+		for _, code := range CodesResponse.Codes {
 			if !slices.Contains(CodesStored.Codes, code) {
 				newCodes += fmt.Sprintf("*%s*\n", code.Code)
 			}
@@ -105,7 +100,7 @@ func FetchCodes(config *models.Config) {
 		}
 		os.Remove(filepath)
 		file, _ := os.Create(filepath)
-		json.NewEncoder(file).Encode(CodesResponce)
+		json.NewEncoder(file).Encode(CodesResponse)
 		file.Close()
 		time.Sleep(TIMEOUT * time.Hour)
 	}
