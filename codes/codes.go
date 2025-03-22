@@ -16,7 +16,7 @@ import (
 const TIMEOUT = 1
 
 func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error) {
-	filepath := GenerateFilePath(config.CodesDir, "subscribers.json")
+	filepath := config.CodesDir + "/" + "subscribers.json"
 	data, err := os.ReadFile(filepath)
 	if err == nil {
 		_ = json.Unmarshal(data, &subscribers)
@@ -24,14 +24,10 @@ func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error)
 	return
 }
 
-func GenerateFilePath(dir string, filename string) string {
-	return dir + "/" + filename
-}
-
 func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleResponse) {
 	var currentSubscribers c.Subscribers
 	var newSubscribers c.Subscribers
-	filepath := GenerateFilePath(config.CodesDir, "subscribers.json")
+	filepath := config.CodesDir + "/" + "subscribers.json"
 	currentSubscribers, err := GetCodesUsers(config)
 	if err == nil {
 		os.Remove(filepath)
@@ -56,7 +52,7 @@ func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleRespons
 }
 
 func FetchCodes(config *models.Config) {
-	filepath := GenerateFilePath(config.CodesDir, "codes.json")
+	filepath := config.CodesDir + "/" + "codes.json"
 	params := map[string]string{}
 	headers := map[string]string{}
 	for {
