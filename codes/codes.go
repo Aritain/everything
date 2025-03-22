@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-const TIMEOUT = 6
+const TIMEOUT = 1
 
 func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error) {
 	filepath := GenerateFilePath(config.CodesDir, "subscribers.json")
@@ -56,7 +56,6 @@ func SubscribeUser(userID int64, config *models.Config) (mr models.ModuleRespons
 }
 
 func FetchCodes(config *models.Config) {
-	newCodesHeader := "New codes:\n\n"
 	filepath := GenerateFilePath(config.CodesDir, "codes.json")
 	params := map[string]string{}
 	headers := map[string]string{}
@@ -64,7 +63,7 @@ func FetchCodes(config *models.Config) {
 		var CodesResponse c.CodeData
 		var CodesStored c.CodeData
 		var fetchError bool
-		newCodes := newCodesHeader
+		var newCodes string
 		CodesResponse, fetchError = common.GetRequest[c.CodeData](
 			config.CodesEndpoint,
 			"json",
@@ -93,7 +92,7 @@ func FetchCodes(config *models.Config) {
 			time.Sleep(TIMEOUT * time.Hour)
 			continue
 		}
-		if newCodes != newCodesHeader {
+		if newCodes != "" {
 			for _, user := range users.Subscriber {
 				common.SendTGMessage(user, newCodes)
 			}
