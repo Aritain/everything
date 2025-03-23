@@ -10,6 +10,7 @@ import (
 	c "everything/config"
 	"everything/models"
 	r "everything/models/reminder"
+	"everything/notes"
 	"everything/reminder"
 	"everything/tfl"
 	"everything/weather"
@@ -118,6 +119,8 @@ func main() {
 			//mr = codes.FetchCodes(&config)
 		case "get_reminders":
 			mr = reminder.GetReminders(userID)
+		case "note":
+			mr = notes.ListFiles(&config)
 		case remindCreatePath:
 			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
 			mr = reminder.ReminderCreationStart(userID, &reminderCache)

@@ -13,3 +13,6 @@ REMINDER_DIR = "/home/"
 
 CODE_ENDPOINT = ""
 CODES_DIR = "/codes/"
+
+GOOGLE_TOKEN = "/token/token.json"
+GOOGLE_DIR_ID = "123qwe"

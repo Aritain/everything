@@ -23,6 +23,8 @@ type Config struct {
 	ReminderDir     string  `mapstructure:"REMINDER_DIR"`
 	CodesEndpoint   string  `mapstructure:"CODES_ENDPOINT"`
 	CodesDir        string  `mapstructure:"CODES_DIR"`
+	GoogleToken     string  `mapstructure:"GOOGLE_TOKEN"`
+	GoogleDirId     string  `mapstructure:"GOOGLE_DIR_ID"`
 }
 
 type SavedChat struct {
