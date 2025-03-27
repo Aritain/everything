@@ -10,7 +10,7 @@ import (
 
 func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 	var APIResponse tfl.ArrayOfLineStatus
-	var responceData []tfl.TFLParsed
+	var responseData []tfl.TFLParsed
 	params := map[string]string{}
 	headers := map[string]string{
 		"app_key":    config.TFLToken,
@@ -32,14 +32,14 @@ func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
 		for _, entry := range APIResponse.Lines {
 			// 5: for skipping color square
 			if line[5:] == entry.Line.Name {
-				responceData = append(
-					responceData,
+				responseData = append(
+					responseData,
 					tfl.TFLParsed{Line: line, Status: entry.Status.Description})
 			}
 		}
 	}
 
-	for _, elem := range responceData {
+	for _, elem := range responseData {
 		mr.Text += fmt.Sprintf("%s - *%s*\n", elem.Line, elem.Status)
 	}
 	mr.Text += "https://tfl.gov.uk/"
