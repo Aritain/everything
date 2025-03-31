@@ -109,28 +109,30 @@ func main() {
 		if mr.EndChat {
 			common.EndChat(&userChats, userID)
 		}
-		switch text {
-		case "tfl":
-			mr = tfl.FetchStatus(&config)
-		case "weather":
-			mr = weather.FetchStatus(&config)
-		case "codes_subscribe":
-			mr = codes.SubscribeUser(userID, &config)
-			//mr = codes.FetchCodes(&config)
-		case "get_reminders":
-			mr = reminder.GetReminders(userID)
-		case "note":
-			mr = notes.ListFiles(&config)
-		case remindCreatePath:
-			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
-			mr = reminder.ReminderCreationStart(userID, &reminderCache)
-		case remindDeletePath:
-			mr = reminder.DeleteReminderQuery(userID)
-			if !mr.Error {
-				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
+		// Default commands if user is not in a conversation
+		if chatPath == "" {
+			switch text {
+			case "tfl":
+				mr = tfl.FetchStatus(&config)
+			case "weather":
+				mr = weather.FetchStatus(&config)
+			case "codes_subscribe":
+				mr = codes.SubscribeUser(userID, &config)
+				//mr = codes.FetchCodes(&config)
+			case "get_reminders":
+				mr = reminder.GetReminders(userID)
+			case "note":
+				mr = notes.ListFiles(&config)
+			case remindCreatePath:
+				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
+				mr = reminder.ReminderCreationStart(userID, &reminderCache)
+			case remindDeletePath:
+				mr = reminder.DeleteReminderQuery(userID)
+				if !mr.Error {
+					userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindDeletePath, ChatStage: 0})
+				}
 			}
 		}
-
 		// If user message did not match with anything
 		if mr.Text == "" {
 			mr.Text = "Try again."
