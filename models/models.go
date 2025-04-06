@@ -12,19 +12,20 @@ type ModuleResponse struct {
 }
 
 type Config struct {
-	TGToken         string  `mapstructure:"TG_TOKEN"`
-	BotAdmins       []int64 `mapstructure:"BOT_ADMINS"`
-	BotDebug        bool    `mapstructure:"BOT_DEBUG"`
-	TFLToken        string  `mapstructure:"TFL_TOKEN"`
-	TFLEndpoint     string  `mapstructure:"TFL_ENDPOINT"`
-	TFLAgent        string  `mapstructure:"TFL_AGENT"` // Call fails without this
-	WeatherToken    string  `mapstructure:"WEATHER_TOKEN"`
-	WeatherEndpoint string  `mapstructure:"WEATHER_ENDPOINT"`
-	ReminderDir     string  `mapstructure:"REMINDER_DIR"`
-	CodesEndpoint   string  `mapstructure:"CODES_ENDPOINT"`
-	CodesDir        string  `mapstructure:"CODES_DIR"`
-	GoogleToken     string  `mapstructure:"GOOGLE_TOKEN"`
-	GoogleDirId     string  `mapstructure:"GOOGLE_DIR_ID"`
+	TGToken          string  `mapstructure:"TG_TOKEN"`
+	BotAdmins        []int64 `mapstructure:"BOT_ADMINS"`
+	BotDebug         bool    `mapstructure:"BOT_DEBUG"`
+	TFLToken         string  `mapstructure:"TFL_TOKEN"`
+	TFLEndpoint      string  `mapstructure:"TFL_ENDPOINT"`
+	TFLAgent         string  `mapstructure:"TFL_AGENT"` // Call fails without this
+	WeatherToken     string  `mapstructure:"WEATHER_TOKEN"`
+	WeatherEndpoint  string  `mapstructure:"WEATHER_ENDPOINT"`
+	ReminderDir      string  `mapstructure:"REMINDER_DIR"`
+	TimezoneLocation string  `mapstructure:"TIMZONE_LOCATION"`
+	CodesEndpoint    string  `mapstructure:"CODES_ENDPOINT"`
+	CodesDir         string  `mapstructure:"CODES_DIR"`
+	GoogleToken      string  `mapstructure:"GOOGLE_TOKEN"`
+	GoogleDirId      string  `mapstructure:"GOOGLE_DIR_ID"`
 }
 
 type SavedChat struct {

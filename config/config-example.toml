@@ -10,6 +10,7 @@ WEATHER_TOKEN = "456"
 WEATHER_ENDPOINT = "https://api.weatherapi.com/v1/forecast.json"
 
 REMINDER_DIR = "/home/"
+TIMZONE_LOCATION = "Europe/London"
 
 CODE_ENDPOINT = ""
 CODES_DIR = "/codes/"

@@ -30,8 +30,8 @@ func ReadReminderName(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	return mr
 }
 
-func ReadReminderTime(ri *r.ReminderInput) (mr models.ModuleResponse) {
-	reminderTime, err := ParseTime(ri.Text)
+func ReadReminderTime(ri *r.ReminderInput, config *models.Config) (mr models.ModuleResponse) {
+	reminderTime, err := ParseTime(ri.Text, config)
 	if err != nil {
 		mr.Text = "Failed to read time provided"
 		mr.Error = true

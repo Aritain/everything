@@ -10,6 +10,7 @@ import (
 	"time"
 
 	c "everything/config"
+	"everything/models"
 	r "everything/models/reminder"
 )
 
@@ -135,8 +136,15 @@ Use next year/day/etc
 E.g. If today is 2025-01-15 15:00 and user provides an input of "13", then
 The value would be 2025-01-16 13:00
 */
-func ParseTime(input string) (time.Time, error) {
-	now := time.Now()
+func ParseTime(input string, config *models.Config) (time.Time, error) {
+	location, err := time.LoadLocation(config.TimezoneLocation)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid timezone: %v", err)
+	}
+
+	// Get current time directly in the specified location
+	now := time.Now().In(location)
+
 	input = strings.TrimSpace(input)
 
 	switch {
@@ -152,16 +160,19 @@ func ParseTime(input string) (time.Time, error) {
 
 		if strings.Count(datePart, "-") == 2 {
 			// Format: YYYY-MM-DD hh:mm
-			return time.Parse("2006-01-02 15:04", input)
+			t, err := time.ParseInLocation("2006-01-02 15:04", input, location)
+			if err != nil {
+				return time.Time{}, err
+			}
+			return t, nil
 		} else {
 			// Format: MM-DD hh:mm
 			datePart = fmt.Sprintf("%d-%s", now.Year(), datePart)
-			t, err := time.Parse("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart))
+			t, err := time.ParseInLocation("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart), location)
 			if err != nil {
 				return time.Time{}, err
 			}
 
-			// If the date has already passed this year, use next year
 			if t.Before(now) {
 				t = t.AddDate(1, 0, 0)
 			}
@@ -179,21 +190,18 @@ func ParseTime(input string) (time.Time, error) {
 		hourPart := parts[1]
 
 		if strings.Count(datePart, "-") == 2 {
-			// Format: YYYY-MM-DD hh
-			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart))
+			t, err := time.ParseInLocation("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart), location)
 			if err != nil {
 				return time.Time{}, err
 			}
 			return t, nil
 		} else {
-			// Format: MM-DD hh
 			datePart = fmt.Sprintf("%d-%s", now.Year(), datePart)
-			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart))
+			t, err := time.ParseInLocation("2006-01-02 15", fmt.Sprintf("%s %s", datePart, hourPart), location)
 			if err != nil {
 				return time.Time{}, err
 			}
 
-			// If the date has already passed this year, use next year
 			if t.Before(now) {
 				t = t.AddDate(1, 0, 0)
 			}
@@ -211,27 +219,23 @@ func ParseTime(input string) (time.Time, error) {
 		timePart := parts[1]
 
 		if strings.Contains(timePart, ":") {
-			// Format: DD hh:mm
 			datePart := fmt.Sprintf("%d-%02d-%s", now.Year(), now.Month(), dayPart)
-			t, err := time.Parse("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart))
+			t, err := time.ParseInLocation("2006-01-02 15:04", fmt.Sprintf("%s %s", datePart, timePart), location)
 			if err != nil {
 				return time.Time{}, err
 			}
 
-			// If the date has already passed this month, use next month
 			if t.Before(now) {
 				t = t.AddDate(0, 1, 0)
 			}
 			return t, nil
 		} else {
-			// Format: DD hh
 			datePart := fmt.Sprintf("%d-%02d-%s", now.Year(), now.Month(), dayPart)
-			t, err := time.Parse("2006-01-02 15", fmt.Sprintf("%s %s", datePart, timePart))
+			t, err := time.ParseInLocation("2006-01-02 15", fmt.Sprintf("%s %s", datePart, timePart), location)
 			if err != nil {
 				return time.Time{}, err
 			}
 
-			// If the date has already passed this month, use next month
 			if t.Before(now) {
 				t = t.AddDate(0, 1, 0)
 			}
@@ -240,15 +244,23 @@ func ParseTime(input string) (time.Time, error) {
 
 	case strings.Contains(input, ":"):
 		// Format: hh:mm
-		t, err := time.Parse("15:04", input)
-		if err != nil {
-			return time.Time{}, err
+		parts := strings.Split(input, ":")
+		if len(parts) != 2 {
+			return time.Time{}, fmt.Errorf("invalid time format")
 		}
 
-		// Use today's date
-		t = time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), t.Minute(), 0, 0, now.Location())
+		hour, err := strconv.Atoi(parts[0])
+		if err != nil {
+			return time.Time{}, fmt.Errorf("invalid hour: %v", err)
+		}
+		minute, err := strconv.Atoi(parts[1])
+		if err != nil {
+			return time.Time{}, fmt.Errorf("invalid minute: %v", err)
+		}
 
-		// If the time has already passed today, use tomorrow
+		// Create time using today's date in the given location
+		t := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, location)
+
 		if t.Before(now) {
 			t = t.AddDate(0, 0, 1)
 		}
@@ -256,15 +268,13 @@ func ParseTime(input string) (time.Time, error) {
 
 	default:
 		// Format: hh
-		t, err := time.Parse("15", input)
+		hour, err := strconv.Atoi(input)
 		if err != nil {
-			return time.Time{}, err
+			return time.Time{}, fmt.Errorf("invalid hour: %v", err)
 		}
 
-		// Use today's date and set minutes to 00
-		t = time.Date(now.Year(), now.Month(), now.Day(), t.Hour(), 0, 0, 0, now.Location())
+		t := time.Date(now.Year(), now.Month(), now.Day(), hour, 0, 0, 0, location)
 
-		// If the time has already passed today, use tomorrow
 		if t.Before(now) {
 			t = t.AddDate(0, 0, 1)
 		}

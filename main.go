@@ -42,7 +42,7 @@ func main() {
 	var ucfg t.UpdateConfig = t.NewUpdate(0)
 	ucfg.Timeout = 60
 	updates := bot.GetUpdatesChan(ucfg)
-	go reminder.WatchReminders()
+	go reminder.WatchReminders(&config)
 	go codes.FetchCodes(&config)
 
 	for update := range updates {
@@ -89,7 +89,7 @@ func main() {
 			case 0:
 				mr = reminder.ReadReminderName(&reminderInput)
 			case 1:
-				mr = reminder.ReadReminderTime(&reminderInput)
+				mr = reminder.ReadReminderTime(&reminderInput, &config)
 			case 2:
 				mr = reminder.ReadReminderRepeat(&reminderInput)
 			case 3:

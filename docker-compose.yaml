@@ -13,6 +13,8 @@ services:
       options:
         max-size: '10m'
         max-file: '2'
+    environment:
+        TZ : "Europe/London"
     volumes:
       - ./.reminders:/data/reminders/:rw
       - ./.codes:/data/codes:rw

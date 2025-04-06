@@ -8,4 +8,5 @@ RUN go build -o /everything
 
 FROM alpine:3.16
 COPY --from=app-builder /everything /everything
+RUN apk add tzdata
 ENTRYPOINT ["/everything"]

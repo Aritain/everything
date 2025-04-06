@@ -1,21 +1,25 @@
 package reminder
 
 import (
-	"strings"
+	"fmt"
 	"time"
 
 	"everything/common"
+	"everything/models"
 	r "everything/models/reminder"
 )
 
 const TIMEOUT = 30
 
-func WatchReminders() {
+func WatchReminders(config *models.Config) {
+	location, _ := time.LoadLocation(config.TimezoneLocation)
 	for {
 		reminders := LoadReminders()
 		now := time.Now()
 		for _, reminder := range reminders {
-			if now.After(reminder.ReminderData.NextReminder) {
+			reminderTime := reminder.ReminderData.NextReminder.In(location)
+			//reminderTime = reminderTime.UTC()
+			if now.After(reminderTime) {
 				SendReminder(reminder.ReminderData)
 				DeleteReminder(reminder.FileName)
 				if reminder.ReminderData.RepeatToggle {
@@ -36,9 +40,7 @@ func PrepareReminderWrite(reminder r.Reminder) {
 }
 
 func SendReminder(reminder r.Reminder) {
-	msgText := "It's time for "
-	msgText += FormatReminder(reminder)
-	msgText = strings.Replace(msgText, "for Reminder", "for", -1)
+	msgText := fmt.Sprintf("It's time for *%s*.", reminder.ReminderText)
 	userID := reminder.UserID
 	go common.SendTGMessage(userID, msgText)
 }
