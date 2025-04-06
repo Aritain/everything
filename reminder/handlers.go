@@ -137,13 +137,18 @@ E.g. If today is 2025-01-15 15:00 and user provides an input of "13", then
 The value would be 2025-01-16 13:00
 */
 func ParseTime(input string, config *models.Config) (time.Time, error) {
+	// Use a fixed reference to UTC and then convert to desired timezone
 	location, err := time.LoadLocation(config.TimezoneLocation)
 	if err != nil {
 		return time.Time{}, fmt.Errorf("invalid timezone: %v", err)
 	}
 
-	// Get current time directly in the specified location
-	now := time.Now().In(location)
+	// Get current time in UTC first, then convert to location
+	nowUTC := time.Now().UTC()
+	now := nowUTC.In(location)
+
+	// For debugging
+	// fmt.Printf("Current time in %s: %s\n", location, now.Format("2006-01-02 15:04:05 MST"))
 
 	input = strings.TrimSpace(input)
 
@@ -259,9 +264,12 @@ func ParseTime(input string, config *models.Config) (time.Time, error) {
 		}
 
 		// Create time using today's date in the given location
-		t := time.Date(now.Year(), now.Month(), now.Day(), hour, minute, 0, 0, location)
+		// Directly construct the time with explicit fields to avoid any DST issues
+		year, month, day := now.Date()
+		t := time.Date(year, month, day, hour, minute, 0, 0, location)
 
-		if t.Before(now) {
+		// Compare with now using Unix timestamps to ensure accurate comparison
+		if t.Unix() < now.Unix() {
 			t = t.AddDate(0, 0, 1)
 		}
 		return t, nil
@@ -273,9 +281,12 @@ func ParseTime(input string, config *models.Config) (time.Time, error) {
 			return time.Time{}, fmt.Errorf("invalid hour: %v", err)
 		}
 
-		t := time.Date(now.Year(), now.Month(), now.Day(), hour, 0, 0, 0, location)
+		// Create time using today's date in the given location
+		year, month, day := now.Date()
+		t := time.Date(year, month, day, hour, 0, 0, 0, location)
 
-		if t.Before(now) {
+		// Compare with now using Unix timestamps to ensure accurate comparison
+		if t.Unix() < now.Unix() {
 			t = t.AddDate(0, 0, 1)
 		}
 		return t, nil
