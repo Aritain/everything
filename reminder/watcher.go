@@ -18,7 +18,6 @@ func WatchReminders(config *models.Config) {
 		now := time.Now()
 		for _, reminder := range reminders {
 			reminderTime := reminder.ReminderData.NextReminder.In(location)
-			//reminderTime = reminderTime.UTC()
 			if now.After(reminderTime) {
 				SendReminder(reminder.ReminderData)
 				DeleteReminder(reminder.FileName)

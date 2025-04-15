@@ -147,9 +147,6 @@ func ParseTime(input string, config *models.Config) (time.Time, error) {
 	nowUTC := time.Now().UTC()
 	now := nowUTC.In(location)
 
-	// For debugging
-	// fmt.Printf("Current time in %s: %s\n", location, now.Format("2006-01-02 15:04:05 MST"))
-
 	input = strings.TrimSpace(input)
 
 	switch {

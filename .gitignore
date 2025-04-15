@@ -4,4 +4,5 @@ config/config.toml
 .reminders
 .codes
 .samples
+.google
 list
