@@ -9,6 +9,7 @@ import (
 	"everything/common"
 	c "everything/config"
 	"everything/models"
+	n "everything/models/notes"
 	r "everything/models/reminder"
 	"everything/notes"
 	"everything/reminder"
@@ -32,12 +33,14 @@ func main() {
 
 	var userChats []models.SavedChat
 	var reminderCache []r.Reminder
+	var noteCache []n.FileSelector
 	var userID int64
 	var chatPath string
 	var chatStage int8
 	var text string
 	remindCreatePath := "create_reminder"
 	remindDeletePath := "delete_reminder"
+	notesPath := "notes"
 	// Create chan for telegram updates
 	var ucfg t.UpdateConfig = t.NewUpdate(0)
 	ucfg.Timeout = 60
@@ -105,6 +108,17 @@ func main() {
 		if chatPath == remindDeletePath {
 			mr = reminder.DeleteReminderConfirm(text, userID)
 		}
+		if chatPath == notesPath {
+			switch chatStage {
+			case 0:
+				mr = notes.SelectFile(text, userID, &noteCache)
+			case 1:
+				mr = notes.UpdateFile(text, userID, &noteCache)
+			}
+			if (!mr.Error) && (!mr.EndChat) {
+				common.IncrementStage(&userChats, userID)
+			}
+		}
 		// Delete any ongoing chat if got EndChat flag
 		if mr.EndChat {
 			common.EndChat(&userChats, userID)
@@ -122,7 +136,8 @@ func main() {
 			case "get_reminders":
 				mr = reminder.GetReminders(userID)
 			case "note":
-				mr = notes.ListFiles(&config)
+				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: notesPath, ChatStage: 0})
+				mr = notes.ListFiles()
 			case remindCreatePath:
 				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
 				mr = reminder.ReminderCreationStart(userID, &reminderCache)

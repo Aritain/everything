@@ -36,6 +36,9 @@ func CompileDefaultKeyboard() t.InlineKeyboardMarkup {
 			t.NewInlineKeyboardButtonData("Create Reminder", "/create_reminder"),
 		),
 		t.NewInlineKeyboardRow(
+			t.NewInlineKeyboardButtonData("Create Note", "/note"),
+		),
+		t.NewInlineKeyboardRow(
 			t.NewInlineKeyboardButtonData("Delete Reminder", "/delete_reminder"),
 		),
 		t.NewInlineKeyboardRow(

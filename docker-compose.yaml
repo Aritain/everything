@@ -19,3 +19,4 @@ services:
       - ./.reminders:/data/reminders/:rw
       - ./.codes:/data/codes:rw
       - ./config/config.toml:/config/config.toml:ro
+      - ./.google:/data/google/:ro

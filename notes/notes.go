@@ -1,31 +1,66 @@
 package notes
 
 import (
-	"context"
+	"everything/common"
 	"everything/models"
 	"fmt"
+	"strconv"
+	"strings"
 
-	"google.golang.org/api/drive/v3"
-	"google.golang.org/api/option"
+	n "everything/models/notes"
 )
 
-func GetFiles(config *models.Config) (r *drive.FileList) {
-	ctx := context.Background()
-	srv, _ := drive.NewService(ctx, option.WithCredentialsFile(config.GoogleToken))
-
-	query := fmt.Sprintf("'%s' in parents", config.GoogleDirId)
-	r, _ = srv.Files.List().
-		Q(query).
-		Fields("files(id, name)").
-		Do()
+func ListFiles() (mr models.ModuleResponse) {
+	driveFiles, err := GetFiles()
+	if err != nil {
+		mr = FailedAPICall(err)
+		return
+	}
+	fileNames := ParseFiles(driveFiles.Files)
+	mr.Text = "Choose file:\n"
+	for index, f := range fileNames {
+		filename := strings.Split(f, ".")
+		mr.Text += fmt.Sprintf("(%v) %s\n", (index + 1), filename[0])
+	}
+	mr.Keyboard = common.CompileCancelKeyboard()
 	return
 }
 
-func ListFiles(config *models.Config) (mr models.ModuleResponse) {
-	driveFiles := GetFiles(config)
-	// f.Name, f.Id
-	for _, f := range driveFiles.Files {
-		mr.Text += f.Name + "\n"
+func SelectFile(text string, userID int64, fs *[]n.FileSelector) (mr models.ModuleResponse) {
+	mr.Keyboard = common.CompileCancelKeyboard()
+	driveFiles, err := GetFiles()
+	if err != nil {
+		mr = FailedAPICall(err)
+		return
 	}
+	fileNum, err := strconv.Atoi(text)
+	if (err != nil) || (fileNum <= 0) || (fileNum > len(driveFiles.Files)) {
+		mr.Text = "Bad value, try again"
+		mr.Error = true
+		return mr
+	}
+	fileID := getFileID(driveFiles.Files, fileNum)
+	*fs = append(*fs, n.FileSelector{UserID: userID, FileID: fileID})
+	mr.Text = "Provide note"
+	return
+}
+
+func UpdateFile(text string, userID int64, fs *[]n.FileSelector) (mr models.ModuleResponse) {
+	var err error
+	fileID := FileSelectionGet(fs, userID)
+	fileContent, err := DownloadFile(fileID)
+	if err != nil {
+		mr = FailedAPICall(err)
+		return
+	}
+	fileContent += "\n" + text
+	err = UpdateDriveFile(fileID, fileContent)
+	if err != nil {
+		mr = FailedAPICall(err)
+		return
+	}
+	mr.Text = "Done"
+	mr.EndChat = true
+	mr.Keyboard = common.CompileDefaultKeyboard()
 	return
 }
