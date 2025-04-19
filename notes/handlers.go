@@ -112,3 +112,11 @@ func FailedAPICall(err error) (mr models.ModuleResponse) {
 	mr.Keyboard = common.CompileDefaultKeyboard()
 	return
 }
+
+func DeleteSelectorCache(fs *[]n.FileSelector, userID int64) {
+	for index, elem := range *fs {
+		if elem.UserID == userID {
+			*fs = append((*fs)[:index], (*fs)[index+1:]...)
+		}
+	}
+}

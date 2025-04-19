@@ -48,6 +48,8 @@ func SelectFile(text string, userID int64, fs *[]n.FileSelector) (mr models.Modu
 func UpdateFile(text string, userID int64, fs *[]n.FileSelector) (mr models.ModuleResponse) {
 	var err error
 	fileID := FileSelectionGet(fs, userID)
+	// Whatever outcome is, we delete Selector cache since the chat will be ended either way
+	DeleteSelectorCache(fs, userID)
 	fileContent, err := DownloadFile(fileID)
 	if err != nil {
 		mr = FailedAPICall(err)
