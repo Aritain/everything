@@ -41,5 +41,5 @@ func PrepareReminderWrite(reminder r.Reminder) {
 func SendReminder(reminder r.Reminder) {
 	msgText := fmt.Sprintf("It's time for *%s*.", reminder.ReminderText)
 	userID := reminder.UserID
-	go common.SendTGMessage(userID, msgText)
+	go common.SendTGMessage(userID, msgText, "")
 }

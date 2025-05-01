@@ -14,6 +14,7 @@ TIMZONE_LOCATION = "Europe/London"
 
 CODE_ENDPOINT = ""
 CODES_DIR = "/codes/"
+CODES_URL = "someurl"
 
 GOOGLE_TOKEN = "/token/token.json"
 GOOGLE_DIR_ID = "123qwe"

@@ -9,5 +9,10 @@ type CodeBody struct {
 }
 
 type Subscribers struct {
-	Subscriber []int64 `json:"subscribers"`
+	Subscribers []Subscriber `json:"subscribers"`
+}
+
+type Subscriber struct {
+	TGID   int64  `json:"TelegramID"`
+	UserID string `json:"UserID"`
 }

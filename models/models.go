@@ -24,6 +24,7 @@ type Config struct {
 	TimezoneLocation string  `mapstructure:"TIMZONE_LOCATION"`
 	CodesEndpoint    string  `mapstructure:"CODES_ENDPOINT"`
 	CodesDir         string  `mapstructure:"CODES_DIR"`
+	CodesURL         string  `mapstructure:"CODES_URL"`
 	GoogleToken      string  `mapstructure:"GOOGLE_TOKEN"`
 	GoogleDirId      string  `mapstructure:"GOOGLE_DIR_ID"`
 }

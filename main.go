@@ -41,6 +41,7 @@ func main() {
 	remindCreatePath := "create_reminder"
 	remindDeletePath := "delete_reminder"
 	notesPath := "notes"
+	codesPath := "codes_subscribe"
 	// Create chan for telegram updates
 	var ucfg t.UpdateConfig = t.NewUpdate(0)
 	ucfg.Timeout = 60
@@ -108,6 +109,10 @@ func main() {
 		if chatPath == remindDeletePath {
 			mr = reminder.DeleteReminderConfirm(text, userID)
 		}
+		// /codes path
+		if chatPath == codesPath {
+			mr = codes.SubscribeUser(text, userID, &config)
+		}
 		if chatPath == notesPath {
 			switch chatStage {
 			case 0:
@@ -130,12 +135,12 @@ func main() {
 				mr = tfl.FetchStatus(&config)
 			case "weather":
 				mr = weather.FetchStatus(&config)
-			case "codes_subscribe":
-				mr = codes.SubscribeUser(userID, &config)
-				//mr = codes.FetchCodes(&config)
+			case codesPath:
+				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: codesPath, ChatStage: 0})
+				mr = codes.AskID(userID)
 			case "get_reminders":
 				mr = reminder.GetReminders(userID)
-			case "note":
+			case notesPath:
 				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: notesPath, ChatStage: 0})
 				mr = notes.ListFiles()
 			case remindCreatePath:
