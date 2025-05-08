@@ -51,6 +51,8 @@ func main() {
 		var chatPath string
 		var chatStage int8
 		var text string
+		var mr models.ModuleResponse
+		var tgm models.TGMessage
 		if (update.Message == nil) && (update.CallbackQuery == nil) { // ignore any non-Message updates
 			continue
 		}
@@ -72,8 +74,6 @@ func main() {
 		if strings.Contains(text, "/") {
 			text = text[1:]
 		}
-		var mr models.ModuleResponse
-		var tgm models.TGMessage
 
 		// Cancel ongoing conversation and purge cache
 		if text == "Cancel" {

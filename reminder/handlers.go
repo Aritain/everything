@@ -79,19 +79,17 @@ func FormatReminder(reminder r.Reminder) (fmtReminder string) {
 	var repeatable string
 	if reminder.RepeatToggle {
 		repeatable = fmt.Sprintf(
-			" Repeatable each %v %s",
+			" and every %v %s",
 			reminder.RepeatValue,
 			reminder.RepeatMode,
 		)
 		if reminder.RepeatValue > 1 {
-			repeatable += "s."
-		} else {
-			repeatable += "."
+			repeatable += "s"
 		}
 	}
 	repeatable += "\n"
 	fmtReminder = fmt.Sprintf(
-		"Reminder *%s* at %s.%s",
+		"Reminder *%s*\n%s%s\n",
 		reminder.ReminderText,
 		reminder.NextReminder.Format("2006-01-02 15:04"),
 		repeatable,
@@ -148,6 +146,24 @@ func ParseTime(input string, config *models.Config) (time.Time, error) {
 	now := nowUTC.In(location)
 
 	input = strings.TrimSpace(input)
+
+	// Handle relative formats like 15d, 3h, 2m, 1y
+	if len(input) > 1 {
+		suffix := input[len(input)-1]
+		valueStr := input[:len(input)-1]
+		if value, err := strconv.Atoi(valueStr); err == nil {
+			switch suffix {
+			case 'h':
+				return now.Add(time.Duration(value) * time.Hour), nil
+			case 'd':
+				return now.AddDate(0, 0, value), nil
+			case 'm':
+				return now.AddDate(0, value, 0), nil
+			case 'y':
+				return now.AddDate(value, 0, 0), nil
+			}
+		}
+	}
 
 	switch {
 	case strings.Contains(input, "-") && strings.Contains(input, ":"):
