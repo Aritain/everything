@@ -104,7 +104,12 @@ func FetchCodes(config *models.Config) {
 		if len(newCodes) != 0 {
 			for _, user := range users.Subscribers {
 				message := FormatCodes(user.UserID, newCodes, config.CodesURL)
-				common.SendTGMessage(user.TGID, message, "HTML")
+				var tgm models.TGMessage
+				tgm.TGToken = config.TGToken
+				tgm.UserID = user.TGID
+				tgm.Text = message
+				tgm.ParseMode = "HTML"
+				go common.SendTGMessage(tgm)
 			}
 		}
 		os.Remove(filepath)
@@ -120,7 +125,7 @@ func FormatCodes(userID string, codes []string, CodesURL string) (codesFormatted
 		fmtURL := CodesURL
 		fmtURL = strings.Replace(fmtURL, "NEW_CODE", code, -1)
 		fmtURL = strings.Replace(fmtURL, "USER_ID", userID, -1)
-		codesFormatted += fmt.Sprintf("<a href='%s'>%s</a>", fmtURL, code)
+		codesFormatted += fmt.Sprintf("<a href='%s'>%s</a>\n", fmtURL, code)
 	}
 	return
 }

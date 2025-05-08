@@ -19,7 +19,7 @@ func WatchReminders(config *models.Config) {
 		for _, reminder := range reminders {
 			reminderTime := reminder.ReminderData.NextReminder.In(location)
 			if now.After(reminderTime) {
-				SendReminder(reminder.ReminderData)
+				SendReminder(config.TGToken, reminder.ReminderData)
 				DeleteReminder(reminder.FileName)
 				if reminder.ReminderData.RepeatToggle {
 					bumpReminder := reminder.ReminderData
@@ -38,8 +38,11 @@ func PrepareReminderWrite(reminder r.Reminder) {
 	WriteReminder(&reminders, reminder.UserID)
 }
 
-func SendReminder(reminder r.Reminder) {
+func SendReminder(tgToken string, reminder r.Reminder) {
 	msgText := fmt.Sprintf("It's time for *%s*.", reminder.ReminderText)
-	userID := reminder.UserID
-	go common.SendTGMessage(userID, msgText, "")
+	var tgm models.TGMessage
+	tgm.TGToken = tgToken
+	tgm.UserID = reminder.UserID
+	tgm.Text = msgText
+	go common.SendTGMessage(tgm)
 }

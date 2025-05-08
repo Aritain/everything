@@ -34,3 +34,11 @@ type SavedChat struct {
 	ChatPath  string
 	ChatStage int8
 }
+
+type TGMessage struct {
+	TGToken   string
+	UserID    int64
+	Text      string
+	ParseMode string
+	Keyboard  t.InlineKeyboardMarkup
+}

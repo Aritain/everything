@@ -34,10 +34,7 @@ func main() {
 	var userChats []models.SavedChat
 	var reminderCache []r.Reminder
 	var noteCache []n.FileSelector
-	var userID int64
-	var chatPath string
-	var chatStage int8
-	var text string
+
 	remindCreatePath := "create_reminder"
 	remindDeletePath := "delete_reminder"
 	notesPath := "notes"
@@ -50,6 +47,10 @@ func main() {
 	go codes.FetchCodes(&config)
 
 	for update := range updates {
+		var userID int64
+		var chatPath string
+		var chatStage int8
+		var text string
 		if (update.Message == nil) && (update.CallbackQuery == nil) { // ignore any non-Message updates
 			continue
 		}
@@ -72,8 +73,8 @@ func main() {
 			text = text[1:]
 		}
 		var mr models.ModuleResponse
+		var tgm models.TGMessage
 
-		msg := t.NewMessage(userID, "")
 		// Cancel ongoing conversation and purge cache
 		if text == "Cancel" {
 			common.EndChat(&userChats, userID)
@@ -160,10 +161,13 @@ func main() {
 		if len(mr.Keyboard.InlineKeyboard) == 0 {
 			mr.Keyboard = common.CompileDefaultKeyboard()
 		}
-		msg.Text = mr.Text
-		msg.ParseMode = "Markdown"
-		msg.ReplyMarkup = mr.Keyboard
-		if _, err := bot.Send(msg); err != nil {
+		tgm.TGToken = config.TGToken
+		tgm.UserID = userID
+		tgm.Text = mr.Text
+		tgm.ParseMode = "Markdown"
+		tgm.Keyboard = mr.Keyboard
+		go common.SendTGMessage(tgm)
+		if err != nil {
 			log.Panic(err)
 		}
 	}
