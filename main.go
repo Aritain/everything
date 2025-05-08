@@ -110,10 +110,11 @@ func main() {
 		if chatPath == remindDeletePath {
 			mr = reminder.DeleteReminderConfirm(text, userID)
 		}
-		// /codes path
+		// /codes_subscribe path
 		if chatPath == codesPath {
 			mr = codes.SubscribeUser(text, userID, &config)
 		}
+		// /notes path
 		if chatPath == notesPath {
 			switch chatStage {
 			case 0:
