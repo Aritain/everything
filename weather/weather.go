@@ -5,11 +5,13 @@ import (
 	"math"
 
 	"everything/common"
+	cfg "everything/config"
 	"everything/models"
 	w "everything/models/weather"
 )
 
-func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
+func FetchStatus() (mr models.ModuleResponse) {
+	config := cfg.Get().Config()
 	var APIResponse w.WeatherStatus
 	params := map[string]string{
 		"key":    config.WeatherToken,

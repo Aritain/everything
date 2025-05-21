@@ -4,11 +4,13 @@ import (
 	"fmt"
 
 	"everything/common"
+	cfg "everything/config"
 	"everything/models"
 	tfl "everything/models/tfl"
 )
 
-func FetchStatus(config *models.Config) (mr models.ModuleResponse) {
+func FetchStatus() (mr models.ModuleResponse) {
+	config := cfg.Get().Config()
 	var APIResponse tfl.ArrayOfLineStatus
 	var responseData []tfl.TFLParsed
 	params := map[string]string{}

@@ -9,8 +9,7 @@ import (
 	"strings"
 	"time"
 
-	c "everything/config"
-	"everything/models"
+	cfg "everything/config"
 	r "everything/models/reminder"
 )
 
@@ -44,7 +43,7 @@ func AppendCache(savedReminders *[]r.Reminder, userID int64, data r.Reminder) {
 
 func WriteReminder(savedReminders *[]r.Reminder, userID int64) {
 	var reminder r.Reminder
-	config, _ := c.LoadConfig()
+	config := cfg.Get().Config()
 	dir := config.ReminderDir
 	timestamp := strconv.FormatInt(time.Now().UTC().UnixNano(), 10)
 	for _, elem := range *savedReminders {
@@ -61,7 +60,7 @@ func WriteReminder(savedReminders *[]r.Reminder, userID int64) {
 }
 
 func LoadReminders() (reminders []r.ReminderFile) {
-	config, _ := c.LoadConfig()
+	config := cfg.Get().Config()
 	dir := config.ReminderDir
 	files, _ := os.ReadDir(dir)
 
@@ -98,7 +97,7 @@ func FormatReminder(reminder r.Reminder) (fmtReminder string) {
 }
 
 func DeleteReminder(filename string) (status bool) {
-	config, _ := c.LoadConfig()
+	config := cfg.Get().Config()
 	dir := config.ReminderDir
 	err := os.Remove(dir + "/" + filename)
 	return err == nil
@@ -134,7 +133,8 @@ Use next year/day/etc
 E.g. If today is 2025-01-15 15:00 and user provides an input of "13", then
 The value would be 2025-01-16 13:00
 */
-func ParseTime(input string, config *models.Config) (time.Time, error) {
+func ParseTime(input string) (time.Time, error) {
+	config := cfg.Get().Config()
 	// Use a fixed reference to UTC and then convert to desired timezone
 	location, err := time.LoadLocation(config.TimezoneLocation)
 	if err != nil {

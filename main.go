@@ -7,7 +7,7 @@ import (
 
 	"everything/codes"
 	"everything/common"
-	c "everything/config"
+	cfg "everything/config"
 	"everything/models"
 	n "everything/models/notes"
 	r "everything/models/reminder"
@@ -20,10 +20,10 @@ import (
 )
 
 func main() {
-	config, err := c.LoadConfig()
-	if err != nil {
-		log.Fatal("Failed to load the config.")
+	if err := cfg.Initialize(); err != nil {
+		log.Fatalf("Failed to load config: %v", err)
 	}
+	config := cfg.Get().Config()
 
 	bot, err := t.NewBotAPI(config.TGToken)
 	if err != nil {
@@ -43,8 +43,8 @@ func main() {
 	var ucfg t.UpdateConfig = t.NewUpdate(0)
 	ucfg.Timeout = 60
 	updates := bot.GetUpdatesChan(ucfg)
-	go reminder.WatchReminders(&config)
-	go codes.FetchCodes(&config)
+	go reminder.WatchReminders()
+	go codes.FetchCodes()
 
 	for update := range updates {
 		var userID int64
@@ -94,7 +94,7 @@ func main() {
 			case 0:
 				mr = reminder.ReadReminderName(&reminderInput)
 			case 1:
-				mr = reminder.ReadReminderTime(&reminderInput, &config)
+				mr = reminder.ReadReminderTime(&reminderInput)
 			case 2:
 				mr = reminder.ReadReminderRepeat(&reminderInput)
 			case 3:
@@ -112,7 +112,7 @@ func main() {
 		}
 		// /codes_subscribe path
 		if chatPath == codesPath {
-			mr = codes.SubscribeUser(text, userID, &config)
+			mr = codes.SubscribeUser(text, userID)
 		}
 		// /notes path
 		if chatPath == notesPath {
@@ -134,9 +134,9 @@ func main() {
 		if chatPath == "" {
 			switch text {
 			case "tfl":
-				mr = tfl.FetchStatus(&config)
+				mr = tfl.FetchStatus()
 			case "weather":
-				mr = weather.FetchStatus(&config)
+				mr = weather.FetchStatus()
 			case codesPath:
 				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: codesPath, ChatStage: 0})
 				mr = codes.AskID(userID)

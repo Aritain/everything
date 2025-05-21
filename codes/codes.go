@@ -3,6 +3,7 @@ package codes
 import (
 	"encoding/json"
 	"everything/common"
+	cfg "everything/config"
 	"everything/models"
 	c "everything/models/codes"
 	"os"
@@ -11,7 +12,8 @@ import (
 
 const TIMEOUT = 1
 
-func GetCodesUsers(config *models.Config) (subscribers c.Subscribers, err error) {
+func GetCodesUsers() (subscribers c.Subscribers, err error) {
+	config := cfg.Get().Config()
 	filepath := config.CodesDir + "/" + "subscribers.json"
 	data, err := os.ReadFile(filepath)
 	if err == nil {
@@ -26,11 +28,12 @@ func AskID(userID int64) (mr models.ModuleResponse) {
 	return
 }
 
-func SubscribeUser(text string, userID int64, config *models.Config) (mr models.ModuleResponse) {
+func SubscribeUser(text string, userID int64) (mr models.ModuleResponse) {
+	config := cfg.Get().Config()
 	var currentSubscribers c.Subscribers
 	var newSubscribers c.Subscribers
 	filepath := config.CodesDir + "/" + "subscribers.json"
-	currentSubscribers, err := GetCodesUsers(config)
+	currentSubscribers, err := GetCodesUsers()
 	if err == nil {
 		os.Remove(filepath)
 	}

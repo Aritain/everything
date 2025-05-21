@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"everything/common"
-	c "everything/config"
+	cfg "everything/config"
 	"everything/models"
 	n "everything/models/notes"
 	"fmt"
@@ -18,10 +18,7 @@ import (
 )
 
 func InitService() (srv *drive.Service, query string, err error) {
-	// Function provides srv on demand.
-	// It also provides query string, but only one other function really needs it
-	// But the query is still generated here so we don't call LoadConfig outside of this function
-	config, _ := c.LoadConfig()
+	config := cfg.Get().Config()
 	ctx := context.Background()
 	srv, err = drive.NewService(ctx, option.WithCredentialsFile(config.GoogleToken))
 	if err != nil {

@@ -3,6 +3,7 @@ package codes
 import (
 	"encoding/json"
 	"everything/common"
+	cfg "everything/config"
 	"everything/models"
 	c "everything/models/codes"
 	"fmt"
@@ -14,7 +15,8 @@ import (
 	"time"
 )
 
-func FetchCodes(config *models.Config) {
+func FetchCodes() {
+	config := cfg.Get().Config()
 	filepath := config.CodesDir + "/" + "codes.json"
 	params := map[string]string{}
 	headers := map[string]string{}
@@ -45,7 +47,7 @@ func FetchCodes(config *models.Config) {
 				newCodes = append(newCodes, code.Code)
 			}
 		}
-		users, err := GetCodesUsers(config)
+		users, err := GetCodesUsers()
 		if err != nil {
 			log.Println("No subscribers found, skipping")
 			time.Sleep(TIMEOUT * time.Hour)

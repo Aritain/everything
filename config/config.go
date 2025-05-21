@@ -1,21 +1,54 @@
 package config
 
 import (
-	m "everything/models"
+	"sync"
+
+	"everything/models"
 
 	"github.com/spf13/viper"
 )
 
-func LoadConfig() (config m.Config, err error) {
-	v := viper.New()
-	v.AddConfigPath("config/")
-	v.SetConfigName("config")
-	v.SetConfigType("toml")
-	err = v.ReadInConfig()
-	if err != nil {
-		return
-	}
+var (
+	serviceInstance *ConfigService
+	once            sync.Once
+)
 
-	err = v.Unmarshal(&config)
-	return
+type ConfigService struct {
+	mu     sync.RWMutex
+	config models.Config
+}
+
+func Initialize() error {
+	var initErr error
+	once.Do(func() {
+		v := viper.New()
+		v.AddConfigPath("config/")
+		v.SetConfigName("config")
+		v.SetConfigType("toml")
+
+		if err := v.ReadInConfig(); err != nil {
+			initErr = err
+			return
+		}
+
+		var cfg models.Config
+		if err := v.Unmarshal(&cfg); err != nil {
+			initErr = err
+			return
+		}
+
+		serviceInstance = &ConfigService{
+			config: cfg,
+		}
+	})
+	return initErr
+}
+func Get() *ConfigService {
+	return serviceInstance
+}
+
+func (cs *ConfigService) Config() models.Config {
+	cs.mu.RLock()
+	defer cs.mu.RUnlock()
+	return cs.config
 }

@@ -5,13 +5,15 @@ import (
 	"time"
 
 	"everything/common"
+	cfg "everything/config"
 	"everything/models"
 	r "everything/models/reminder"
 )
 
 const TIMEOUT = 30
 
-func WatchReminders(config *models.Config) {
+func WatchReminders() {
+	config := cfg.Get().Config()
 	location, _ := time.LoadLocation(config.TimezoneLocation)
 	for {
 		reminders := LoadReminders()
