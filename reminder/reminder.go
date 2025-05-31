@@ -5,6 +5,7 @@ import (
 	"log"
 	"slices"
 	"strconv"
+	"strings"
 
 	"everything/common"
 	"everything/models"
@@ -31,6 +32,11 @@ func ReadReminderName(ri *r.ReminderInput) (mr models.ModuleResponse) {
 }
 
 func ReadReminderTime(ri *r.ReminderInput) (mr models.ModuleResponse) {
+	if strings.Contains(ri.Text, "+") {
+		mr.Text = "It's not +, but h/d/m/y"
+		mr.Error = true
+		return mr
+	}
 	reminderTime, err := ParseTime(ri.Text)
 	if err != nil {
 		mr.Text = "Failed to read time provided"
@@ -104,7 +110,7 @@ func GetReminders(userID int64) (mr models.ModuleResponse) {
 
 func DeleteReminderQuery(userID int64) (mr models.ModuleResponse) {
 	var counter int
-	response := "Send me the number of reminder to delete:\n"
+	response := "Send me the number of reminder to delete:\n\n"
 	mr.Text += response
 	reminders := LoadReminders()
 	for _, reminder := range reminders {
