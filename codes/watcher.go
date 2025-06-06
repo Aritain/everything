@@ -79,5 +79,9 @@ func FormatCodes(userID string, codes []string, CodesURL string) (codesFormatted
 		fmtURL = strings.Replace(fmtURL, "USER_ID", userID, -1)
 		codesFormatted += fmt.Sprintf("<a href='%s'>%s</a>\n", fmtURL, code)
 	}
+	codesFormatted += "\n"
+	for _, code := range codes {
+		codesFormatted += fmt.Sprintf("%s\n", code)
+	}
 	return
 }
