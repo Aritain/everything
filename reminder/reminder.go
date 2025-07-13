@@ -24,6 +24,7 @@ func ReadReminderName(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	if len(ri.Text) > 30 {
 		mr.Text = "Too long"
 		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{ReminderText: ri.Text})
@@ -35,12 +36,14 @@ func ReadReminderTime(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	if strings.Contains(ri.Text, "+") {
 		mr.Text = "It's not +, but h/d/m/y"
 		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
 	reminderTime, err := ParseTime(ri.Text)
 	if err != nil {
 		mr.Text = "Failed to read time provided"
 		mr.Error = true
+		mr.Keyboard = common.CompileCancelKeyboard()
 		return mr
 	}
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{NextReminder: reminderTime})
@@ -134,6 +137,7 @@ func DeleteReminderConfirm(input string, userID int64) (mr models.ModuleResponse
 	number, err := strconv.Atoi(input)
 	if (err != nil) || (number <= 0) {
 		mr.Text = "Bad value"
+		mr.Keyboard = common.CompileCancelKeyboard()
 		mr.Error = true
 		return mr
 	}
