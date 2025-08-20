@@ -19,6 +19,7 @@ type Config struct {
 	TFLEndpoint      string  `mapstructure:"TFL_ENDPOINT"`
 	TFLAgent         string  `mapstructure:"TFL_AGENT"` // Call fails without this
 	WeatherToken     string  `mapstructure:"WEATHER_TOKEN"`
+	WeatherLocation  string  `mapstructure:"WEATHER_LOCATION"`
 	WeatherEndpoint  string  `mapstructure:"WEATHER_ENDPOINT"`
 	ReminderDir      string  `mapstructure:"REMINDER_DIR"`
 	TimezoneLocation string  `mapstructure:"TIMZONE_LOCATION"`

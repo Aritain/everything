@@ -15,7 +15,7 @@ func FetchStatus() (mr models.ModuleResponse) {
 	var APIResponse w.WeatherStatus
 	params := map[string]string{
 		"key":    config.WeatherToken,
-		"q":      "London",
+		"q":      config.WeatherLocation,
 		"days":   "1",
 		"aqi":    "no",
 		"alerts": "no",
@@ -29,7 +29,7 @@ func FetchStatus() (mr models.ModuleResponse) {
 		headers,
 	)
 
-	if mr.Error {
+	if mr.Error || len(APIResponse.Forecast.Forecasts) == 0 {
 		mr.Text = "Failed to fetch weather data"
 		return mr
 	}
