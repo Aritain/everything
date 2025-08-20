@@ -21,7 +21,7 @@ func ReminderCreationStart(userID int64, rc *[]r.Reminder) (mr models.ModuleResp
 
 func ReadReminderName(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	mr.Keyboard = common.CompileCancelKeyboard()
-	if len(ri.Text) > 30 {
+	if len(ri.Text) > 100 {
 		mr.Text = "Too long"
 		mr.Error = true
 		mr.Keyboard = common.CompileCancelKeyboard()
