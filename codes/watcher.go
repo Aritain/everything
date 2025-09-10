@@ -11,7 +11,6 @@ import (
 	"os"
 	"reflect"
 	"slices"
-	"strings"
 	"time"
 )
 
@@ -75,13 +74,8 @@ func FetchCodes() {
 func FormatCodes(userID string, codes []string, CodesURL string) (codesFormatted string) {
 	for _, code := range codes {
 		fmtURL := CodesURL
-		fmtURL = strings.Replace(fmtURL, "NEW_CODE", code, -1)
-		fmtURL = strings.Replace(fmtURL, "USER_ID", userID, -1)
+		fmtURL += code
 		codesFormatted += fmt.Sprintf("<a href='%s'>%s</a>\n", fmtURL, code)
-	}
-	codesFormatted += "\n"
-	for _, code := range codes {
-		codesFormatted += fmt.Sprintf("%s\n", code)
 	}
 	return
 }
