@@ -155,9 +155,11 @@ func main() {
 				}
 			}
 		}
-		// If user message did not match with anything
+		// If user message did not match with anything -> assume it's reminder path
 		if mr.Text == "" {
-			mr.Text = "Try again."
+			reminderCache = append(reminderCache, r.Reminder{UserID: userID})
+			userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 1})
+			mr = reminder.ReadReminderName(&r.ReminderInput{ReminderCache: &reminderCache, Text: text, UserID: userID})
 		}
 		if len(mr.Keyboard.InlineKeyboard) == 0 {
 			mr.Keyboard = common.CompileDefaultKeyboard()
