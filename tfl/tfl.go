@@ -18,8 +18,7 @@ func FetchStatus() (mr models.ModuleResponse) {
 		"app_key":    config.TFLToken,
 		"User-Agent": config.TFLAgent,
 	}
-	trackedLines := []string{"🟪 Elizabeth Line", "🟩 District", "🟦 Piccadilly", "🟥 Central"}
-
+	trackedLines := []string{"💜 Elizabeth Line", "💚 District", "🩶 Jubilee", "🩵 DLR"}
 	APIResponse, mr.Error = common.GetRequest[tfl.ArrayOfLineStatus](
 		config.TFLEndpoint,
 		"xml",
