@@ -8,7 +8,9 @@ import (
 	"everything/codes"
 	"everything/common"
 	cfg "everything/config"
+	"everything/entry"
 	"everything/models"
+	e "everything/models/entry"
 	n "everything/models/notes"
 	r "everything/models/reminder"
 	"everything/notes"
@@ -34,9 +36,11 @@ func main() {
 	var userChats []models.SavedChat
 	var reminderCache []r.Reminder
 	var noteCache []n.FileSelector
+	var entryCache []e.Entry
 
 	remindCreatePath := "create_reminder"
 	remindDeletePath := "delete_reminder"
+	entryPath := "create_entry"
 	notesPath := "notes"
 	codesPath := "codes_subscribe"
 	// Create chan for telegram updates
@@ -145,6 +149,9 @@ func main() {
 			case notesPath:
 				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: notesPath, ChatStage: 0})
 				mr = notes.ListFiles()
+			case entryPath:
+				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: entryPath, ChatStage: 0})
+				mr = entry.EntryCreationStart(userID, &entryCache)
 			case remindCreatePath:
 				userChats = append(userChats, models.SavedChat{UserID: userID, ChatPath: remindCreatePath, ChatStage: 0})
 				mr = reminder.ReminderCreationStart(userID, &reminderCache)
