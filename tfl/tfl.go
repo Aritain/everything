@@ -43,6 +43,7 @@ func FetchStatus() (mr models.ModuleResponse) {
 	for _, elem := range responseData {
 		mr.Text += fmt.Sprintf("%s - *%s*\n", elem.Line, elem.Status)
 	}
-	mr.Text += "https://tfl.gov.uk/"
+	mr.Text += "[TFL](https://tfl.gov.uk/)\n"
+	mr.Text += "[C2C](https://www.c2c-online.co.uk/live-travel-updates/)"
 	return mr
 }

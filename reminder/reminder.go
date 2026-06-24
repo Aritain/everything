@@ -54,7 +54,9 @@ func ReadReminderTime(ri *r.ReminderInput) (mr models.ModuleResponse) {
 
 func ReadReminderRepeat(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	if ri.Text == "No" {
-		mr.Text = "Done"
+		mr.Text = "Done, your reminder:\n"
+		name, time := GetCacheEntry(ri.ReminderCache, ri.UserID)
+		mr.Text += fmt.Sprintf("%v at %v", name, time)
 		mr.EndChat = true
 		mr.Keyboard = common.CompileDefaultKeyboard()
 		WriteReminder(ri.ReminderCache, ri.UserID)
@@ -90,7 +92,9 @@ func ReadReminderValue(ri *r.ReminderInput) (mr models.ModuleResponse) {
 	}
 	value8 := uint8(value64)
 	AppendCache(ri.ReminderCache, ri.UserID, r.Reminder{RepeatValue: value8})
-	mr.Text = "Done"
+	mr.Text = "Done, your reminder:\n"
+	name, time := GetCacheEntry(ri.ReminderCache, ri.UserID)
+	mr.Text += fmt.Sprintf("%v at %v", name, time)
 	mr.EndChat = true
 	mr.Keyboard = common.CompileDefaultKeyboard()
 	WriteReminder(ri.ReminderCache, ri.UserID)

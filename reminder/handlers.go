@@ -117,6 +117,19 @@ func UpdateReminder(reminder r.Reminder) (newTime time.Time) {
 	return newTime
 }
 
+func GetCacheEntry(ri *[]r.Reminder, userID int64) (reminderName string, humanTime string) {
+	var rawTime time.Time
+	for _, reminder := range *ri {
+		if reminder.UserID == userID {
+			rawTime = reminder.NextReminder
+			reminderName = reminder.ReminderText
+			break
+		}
+	}
+	humanTime = rawTime.Local().Format("2 Jan 15:04")
+	return
+}
+
 /*
 Pure AI code, parses user input as time.Time, following formats are supported
 YYYY-MM-DD hh:mm
